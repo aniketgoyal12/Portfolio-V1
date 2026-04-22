@@ -7,44 +7,44 @@ const skillCategories = [
     {
     title: "Frontend Systems",
     skills: [
-        { name: "HTML", level: 90 },
-        { name: "CSS", level: 88 },
-        { name: "JavaScript", level: 92 },
-        { name: "React.js", level: 90 },
-        { name: "React Hooks", level: 88 },
-        { name: "Responsive Design", level: 90 },
+        { name: "HTML" },
+        { name: "CSS" },
+        { name: "JavaScript" },
+        { name: "React.js" },
+        { name: "React Hooks" },
+        { name: "Responsive Design" },
     ],
     color: "accent",
 },
 {
     title: "Backend Architecture",
     skills: [
-        { name: "Node.js", level: 88 },
-        { name: "Express.js", level: 88 },
-        { name: "RESTful APIs", level: 92 },
-        { name: "Middleware", level: 85 },
-        { name: "JWT Authentication", level: 86 },
-        { name: "RBAC", level: 84 },
+        { name: "Node.js" },
+        { name: "Express.js" },
+        { name: "RESTful APIs" },
+        { name: "Middleware" },
+        { name: "JWT Authentication" },
+        { name: "RBAC" },
     ],
     color: "primary",
 },
 {
     title: "Data & Storage",
     skills: [
-        { name: "MongoDB", level: 88 },
-        { name: "Mongoose", level: 86 },
-        { name: "SQL", level: 78 },
-        { name: "Schema Design", level: 85 },
+        { name: "MongoDB" },
+        { name: "Mongoose" },
+        { name: "SQL" },
+        { name: "Schema Design" },
     ],
     color: "secondary",
 },
 {
     title: "DevOps & Tools",
     skills: [
-        { name: "GitHub", level: 92 },
-        { name: "Postman", level: 88 },
-        { name: "Multer", level: 80 },
-        { name: "REST APIs", level: 90 },
+        { name: "GitHub" },
+        { name: "Postman" },
+        { name: "Multer" },
+        { name: "REST APIs" },
     ],
     color: "accent",
 },
@@ -59,12 +59,11 @@ const SkillsSection = () => {
             <div className="grid md:grid-cols-2 gap-8">
                 {skillCategories.map((category, ci) => (
                     <HudCard key={category.title} label={category.title} delay={ci * 0.15}>
-                        <div className="grid grid-cols-4 gap-4 pt-8">
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-8">
                             {category.skills.map((skill, si) => (
                                 <SkillMeter
                                     key={skill.name}
                                     label={skill.name}
-                                    percentage={skill.level}
                                     color={category.color}
                                     delay={ci * 0.15 + si * 0.1}
                                 />

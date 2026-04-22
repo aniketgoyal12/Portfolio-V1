@@ -6,11 +6,42 @@ import { Github, Linkedin, Mail, Send } from "lucide-react";
 
 const ContactSection = () => {
     const [formData, setFormData] = useState({ name: "", email: "", message: "" });
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [statusMessage, setStatusMessage] = useState("");
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        // In production, connect to backend
-        window.location.href = `mailto:goyalaniket2006@gmail.com?subject=Message from ${formData.name}&body=${formData.message}`;
+        setIsSubmitting(true);
+        setStatusMessage("Transmitting payload...");
+
+        try {
+            const response = await fetch("https://formsubmit.co/ajax/goyalaniket2006@gmail.com", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Accept": "application/json"
+                },
+                body: JSON.stringify({
+                    name: formData.name,
+                    email: formData.email,
+                    message: formData.message,
+                    _subject: `New Portfolio Message from ${formData.name}`,
+                    _template: "table"
+                }),
+            });
+
+            if (response.ok) {
+                setStatusMessage("Transmission successful.");
+                setFormData({ name: "", email: "", message: "" });
+            } else {
+                setStatusMessage("Transmission failed. Please try again.");
+            }
+        } catch (error) {
+            setStatusMessage("Connection error. Please check network.");
+        } finally {
+            setIsSubmitting(false);
+            setTimeout(() => setStatusMessage(""), 5000);
+        }
     };
 
     return (
@@ -61,13 +92,24 @@ const ContactSection = () => {
                         </div>
                         <motion.button
                             type="submit"
-                            whileHover={{ scale: 1.02, boxShadow: "0 0 20px hsl(0 85% 50% / 0.3)" }}
-                            whileTap={{ scale: 0.98 }}
-                            className="w-full py-2.5 border border-primary/60 bg-primary/10 text-primary font-display text-xs tracking-[0.2em] uppercase hover:bg-primary/20 transition-colors flex items-center justify-center gap-2"
+                            disabled={isSubmitting}
+                            whileHover={!isSubmitting ? { scale: 1.02, boxShadow: "0 0 20px hsl(0 85% 50% / 0.3)" } : {}}
+                            whileTap={!isSubmitting ? { scale: 0.98 } : {}}
+                            className={`w-full py-2.5 border ${isSubmitting ? 'border-primary/30 bg-primary/5 text-primary/50' : 'border-primary/60 bg-primary/10 text-primary hover:bg-primary/20'} font-display text-xs tracking-[0.2em] uppercase transition-colors flex items-center justify-center gap-2`}
                         >
-                            <Send size={14} />
-                            Transmit
+                            <Send size={14} className={isSubmitting ? "animate-pulse" : ""} />
+                            {isSubmitting ? "Transmitting..." : "Transmit"}
                         </motion.button>
+                        
+                        {statusMessage && (
+                            <motion.p 
+                                initial={{ opacity: 0, y: -10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                className={`text-xs font-display text-center tracking-wider mt-3 ${statusMessage.includes('successful') ? 'text-accent' : (statusMessage.includes('error') || statusMessage.includes('failed') ? 'text-primary' : 'text-muted-foreground')}`}
+                            >
+                                {statusMessage}
+                            </motion.p>
+                        )}
                     </form>
                 </HudCard>
 

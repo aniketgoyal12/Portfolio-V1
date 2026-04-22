@@ -5,11 +5,11 @@ import { ExternalLink, Github } from "lucide-react";
 
 const projects = [
     {
-    name: "AuditFlow",
+    name: "CAG-CO",
     codename: "SYS-001",
-    description: "Secure full-stack notes and audit logging platform with role-based access and protected collaboration.",
-    stack: ["React", "Node.js", "Express.js", "MongoDB", "Mongoose", "JWT", "RBAC"],
-    purpose: "Ensure accountability and traceability of user actions through system-level audit logging.",
+    description: "Static website for a CA firm",
+    stack: ["React", "Vite", "Tailwind CSS"],
+    purpose: "Professional digital presence for financial consultancy and accounting services.",
     github: "#",
     live: "#",
     featured: true,
