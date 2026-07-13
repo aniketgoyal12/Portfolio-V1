@@ -22,7 +22,7 @@ const AboutSection = () => {
                     </p>
                     <p className="text-muted-foreground font-body text-base leading-relaxed">
                         From audit management platforms to real-time expense trackers, every system I build prioritizes
-                        reliability, modularity, and clean engineering. I don't just write code — I architect solutions
+                        reliability, modularity, and clean engineering. I don&apos;t just write code — I architect solutions
                         that scale under pressure.
                     </p>
                 </HudCard>

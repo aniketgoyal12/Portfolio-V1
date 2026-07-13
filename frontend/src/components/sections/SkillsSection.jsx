@@ -5,50 +5,76 @@ import { motion } from "framer-motion";
 
 const skillCategories = [
     {
-    title: "Frontend Systems",
-    skills: [
-        { name: "HTML" },
-        { name: "CSS" },
-        { name: "JavaScript" },
-        { name: "React.js" },
-        { name: "React Hooks" },
-        { name: "Responsive Design" },
-    ],
-    color: "accent",
-},
-{
-    title: "Backend Architecture",
-    skills: [
-        { name: "Node.js" },
-        { name: "Express.js" },
-        { name: "RESTful APIs" },
-        { name: "Middleware" },
-        { name: "JWT Authentication" },
-        { name: "RBAC" },
-    ],
-    color: "primary",
-},
-{
-    title: "Data & Storage",
-    skills: [
-        { name: "MongoDB" },
-        { name: "Mongoose" },
-        { name: "SQL" },
-        { name: "Schema Design" },
-    ],
-    color: "secondary",
-},
-{
-    title: "DevOps & Tools",
-    skills: [
-        { name: "GitHub" },
-        { name: "Postman" },
-        { name: "Multer" },
-        { name: "REST APIs" },
-    ],
-    color: "accent",
-},
-
+        title: "Programming Languages",
+        skills: [
+            { name: "Python" },
+            { name: "Java" },
+            { name: "JavaScript" },
+            { name: "SQL" }
+        ],
+        color: "accent"
+    },
+    {
+        title: "Full Stack",
+        skills: [
+            { name: "React.js" },
+            { name: "Node.js" },
+            { name: "Express.js" },
+            { name: "Flask" },
+            { name: "REST APIs" }
+        ],
+        color: "primary"
+    },
+    {
+        title: "Generative AI",
+        skills: [
+            { name: "OpenAI API" },
+            { name: "Prompt Engineering" },
+            { name: "LLM Integration" },
+            { name: "LangChain" },
+            { name: "AI Agents" }
+        ],
+        color: "secondary"
+    },
+    {
+        title: "Databases",
+        skills: [
+            { name: "MongoDB" },
+            { name: "MySQL" }
+        ],
+        color: "accent"
+    },
+    {
+        title: "Developer Tools",
+        skills: [
+            { name: "Git" },
+            { name: "GitHub" },
+            { name: "Linux Command Line" },
+            { name: "Postman" }
+        ],
+        color: "primary"
+    },
+    {
+        title: "Core Computer Science",
+        skills: [
+            { name: "Data Structures & Algorithms" },
+            { name: "Object-Oriented Programming" },
+            { name: "DBMS" },
+            { name: "Operating Systems" }
+        ],
+        color: "secondary"
+    },
+    {
+        title: "Practices",
+        skills: [
+            { name: "API Design" },
+            { name: "Debugging" },
+            { name: "Code Review" },
+            { name: "Agile" },
+            { name: "Unit Testing" }
+        ],
+        color: "accent"
+    }
 ];
 
 const SkillsSection = () => {
@@ -58,14 +84,14 @@ const SkillsSection = () => {
 
             <div className="grid md:grid-cols-2 gap-8">
                 {skillCategories.map((category, ci) => (
-                    <HudCard key={category.title} label={category.title} delay={ci * 0.15}>
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-8">
+                    <HudCard key={category.title} label={category.title} delay={ci * 0.1}>
+                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 pt-8">
                             {category.skills.map((skill, si) => (
                                 <SkillMeter
                                     key={skill.name}
                                     label={skill.name}
                                     color={category.color}
-                                    delay={ci * 0.15 + si * 0.1}
+                                    delay={ci * 0.05 + si * 0.05}
                                 />
                             ))}
                         </div>
@@ -81,7 +107,7 @@ const SkillsSection = () => {
                 transition={{ delay: 0.5 }}
                 className="mt-12 flex flex-wrap justify-center gap-3"
             >
-                {["JWT", "OAuth", "Bcrypt", "Helmet.js", "Rate Limiting", "CORS", "RBAC", "MVC"].map((tech) => (
+                {["JWT", "OAuth", "Bcrypt", "Rate Limiting", "CORS", "RBAC", "MVC"].map((tech) => (
                     <span
                         key={tech}
                         className="px-3 py-1 text-xs font-display tracking-wider border border-border text-muted-foreground hover:border-accent/50 hover:text-accent transition-colors cursor-default"

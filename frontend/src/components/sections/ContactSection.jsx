@@ -37,6 +37,7 @@ const ContactSection = () => {
                 setStatusMessage("Transmission failed. Please try again.");
             }
         } catch (error) {
+            console.error(error);
             setStatusMessage("Connection error. Please check network.");
         } finally {
             setIsSubmitting(false);
@@ -59,7 +60,7 @@ const ContactSection = () => {
                                 type="text"
                                 value={formData.name}
                                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                                className="w-full bg-muted/50 border border-border px-3 py-2 text-sm font-body text-foreground focus:outline-none focus:border-accent/50 transition-colors"
+                                className="w-full bg-muted/30 border border-muted-foreground/30 focus:border-accent hover:border-accent/40 rounded px-3 py-2 text-sm font-body text-foreground focus:outline-none transition-all duration-300 focus:shadow-[0_0_10px_rgba(195,100,50,0.15)]"
                                 placeholder="Your name"
                                 required
                             />
@@ -72,7 +73,7 @@ const ContactSection = () => {
                                 type="email"
                                 value={formData.email}
                                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                                className="w-full bg-muted/50 border border-border px-3 py-2 text-sm font-body text-foreground focus:outline-none focus:border-accent/50 transition-colors"
+                                className="w-full bg-muted/30 border border-muted-foreground/30 focus:border-accent hover:border-accent/40 rounded px-3 py-2 text-sm font-body text-foreground focus:outline-none transition-all duration-300 focus:shadow-[0_0_10px_rgba(195,100,50,0.15)]"
                                 placeholder="your@email.com"
                                 required
                             />
@@ -85,7 +86,7 @@ const ContactSection = () => {
                                 value={formData.message}
                                 onChange={(e) => setFormData({ ...formData, message: e.target.value })}
                                 rows={4}
-                                className="w-full bg-muted/50 border border-border px-3 py-2 text-sm font-body text-foreground focus:outline-none focus:border-accent/50 transition-colors resize-none"
+                                className="w-full bg-muted/30 border border-muted-foreground/30 focus:border-accent hover:border-accent/40 rounded px-3 py-2 text-sm font-body text-foreground focus:outline-none transition-all duration-300 focus:shadow-[0_0_10px_rgba(195,100,50,0.15)] resize-none"
                                 placeholder="Your message..."
                                 required
                             />
@@ -122,7 +123,7 @@ const ContactSection = () => {
                         <div className="space-y-4">
                             {[
                                 { icon: Mail, label: "Email", value: "goyalaniket2006@gmail.com", href: "mailto:goyalaniket2006@gmail.com" },
-                                { icon: Github, label: "GitHub", value: "github.com/Aniketgoyal12", href: "https://github.com/Aniketgoyal12" },
+                                { icon: Github, label: "GitHub", value: "github.com/aniketgoyal12", href: "https://github.com/aniketgoyal12" },
                                 { icon: Linkedin, label: "LinkedIn", value: "linkedin.com/in/aniketgoyal-ag/", href: "https://linkedin.com/in/aniketgoyal-ag/" },
                             ].map((channel, i) => (
                                 <motion.a

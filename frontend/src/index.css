@@ -20,7 +20,7 @@
     --secondary-foreground: 0 0% 5%;
 
     --muted: 0 0% 12%;
-    --muted-foreground: 0 0% 55%;
+    --muted-foreground: 0 0% 70%;
 
     --accent: 195 100% 50%;
     --accent-foreground: 0 0% 5%;
@@ -55,9 +55,51 @@
     --sidebar-border: 0 0% 15%;
     --sidebar-ring: 0 85% 50%;
   }
+
+  .light {
+    --background: 210 20% 96%;
+    --foreground: 222 47% 11%;
+
+    --card: 210 20% 100%;
+    --card-foreground: 222 47% 11%;
+
+    --popover: 210 20% 100%;
+    --popover-foreground: 222 47% 11%;
+
+    --primary: 0 85% 50%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 43 96% 40%;
+    --secondary-foreground: 0 0% 98%;
+
+    --muted: 210 20% 90%;
+    --muted-foreground: 215 16% 35%;
+
+    --accent: 195 100% 40%;
+    --accent-foreground: 0 0% 98%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 210 20% 85%;
+    --input: 210 20% 85%;
+    --ring: 0 85% 50%;
+
+    /* Custom JARVIS tokens for light mode */
+    --hud-glow: 0 85% 50%;
+    --hud-glow-secondary: 43 96% 40%;
+    --hud-glow-accent: 195 100% 40%;
+    --hud-border: 210 20% 80%;
+    --hud-surface: 210 20% 98%;
+    --hud-surface-elevated: 210 20% 94%;
+  }
 }
 
 @layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
   * {
     @apply border-border;
   }

@@ -27,7 +27,7 @@ const HeroSection = () => {
                         transition={{ duration: 0.8, delay: 1.5 }}
                         className="text-lg md:text-xl font-body text-muted-foreground tracking-widest max-w-xl mx-auto"
                     >
-                        I don't just build projects.{" "}
+                        I don&apos;t just build projects.{" "}
                         <span className="text-accent text-glow-accent">I engineer systems.</span>
                     </motion.p>
 
