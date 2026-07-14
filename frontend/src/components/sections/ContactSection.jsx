@@ -1,40 +1,84 @@
 import SectionHeader from "@/components/SectionHeader.jsx";
 import HudCard from "@/components/HudCard.jsx";
 import { motion } from "framer-motion";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Github, Linkedin, Mail, Send } from "lucide-react";
+import { apiFetch } from "@/utils/api";
 
 const ContactSection = () => {
-    const [formData, setFormData] = useState({ name: "", email: "", message: "" });
+    const [formData, setFormData] = useState({ name: "", email: "", message: "", website: "" });
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [statusMessage, setStatusMessage] = useState("");
+    const [profile, setProfile] = useState({
+        owner_email: "goyalaniket2006@gmail.com",
+        github_url: "https://github.com/aniketgoyal12",
+        github_label: "github.com/aniketgoyal12",
+        linkedin_url: "https://linkedin.com/in/aniketgoyal-ag/",
+        linkedin_label: "linkedin.com/in/aniketgoyal-ag/",
+        first_name: "Aniket",
+        last_name: "Goyal"
+    });
+
+    useEffect(() => {
+        const fetchProfile = async () => {
+            try {
+                const res = await apiFetch("/api/profile/");
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data && data.owner_email) {
+                        setProfile(data);
+                    }
+                }
+            } catch (e) {
+                console.warn("Using local fallback contact channels", e);
+            }
+        };
+        fetchProfile();
+    }, []);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        
+        // Client-side validations
+        const nameVal = formData.name.trim();
+        const emailVal = formData.email.trim();
+        const msgVal = formData.message.trim();
+
+        if (!nameVal || !emailVal || !msgVal) {
+            setStatusMessage("Transmission failed: Required fields empty.");
+            return;
+        }
+
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(emailVal)) {
+            setStatusMessage("Transmission failed: Invalid email format.");
+            return;
+        }
+
         setIsSubmitting(true);
         setStatusMessage("Transmitting payload...");
 
         try {
-            const response = await fetch("https://formsubmit.co/ajax/goyalaniket2006@gmail.com", {
+            const response = await apiFetch("/api/contact/", {
                 method: "POST",
                 headers: {
-                    "Content-Type": "application/json",
-                    "Accept": "application/json"
+                    "Content-Type": "application/json"
                 },
                 body: JSON.stringify({
-                    name: formData.name,
-                    email: formData.email,
-                    message: formData.message,
-                    _subject: `New Portfolio Message from ${formData.name}`,
-                    _template: "table"
+                    name: nameVal,
+                    email: emailVal,
+                    message: msgVal,
+                    website: formData.website // Honeypot bot detector
                 }),
             });
 
+            const data = await response.json();
+
             if (response.ok) {
                 setStatusMessage("Transmission successful.");
-                setFormData({ name: "", email: "", message: "" });
+                setFormData({ name: "", email: "", message: "", website: "" });
             } else {
-                setStatusMessage("Transmission failed. Please try again.");
+                setStatusMessage(data.detail || "Transmission failed. Please try again.");
             }
         } catch (error) {
             console.error(error);
@@ -60,7 +104,7 @@ const ContactSection = () => {
                                 type="text"
                                 value={formData.name}
                                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                                className="w-full bg-muted/30 border border-muted-foreground/30 focus:border-accent hover:border-accent/40 rounded px-3 py-2 text-sm font-body text-foreground focus:outline-none transition-all duration-300 focus:shadow-[0_0_10px_rgba(195,100,50,0.15)]"
+                                className="w-full bg-muted/30 border border-muted-foreground/30 focus:border-accent hover:border-accent/40 rounded px-3 py-2 text-sm font-body text-foreground focus:outline-none transition-all duration-300 focus:shadow-[var(--glow-shadow-secondary)]"
                                 placeholder="Your name"
                                 required
                             />
@@ -73,7 +117,7 @@ const ContactSection = () => {
                                 type="email"
                                 value={formData.email}
                                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                                className="w-full bg-muted/30 border border-muted-foreground/30 focus:border-accent hover:border-accent/40 rounded px-3 py-2 text-sm font-body text-foreground focus:outline-none transition-all duration-300 focus:shadow-[0_0_10px_rgba(195,100,50,0.15)]"
+                                className="w-full bg-muted/30 border border-muted-foreground/30 focus:border-accent hover:border-accent/40 rounded px-3 py-2 text-sm font-body text-foreground focus:outline-none transition-all duration-300 focus:shadow-[var(--glow-shadow-secondary)]"
                                 placeholder="your@email.com"
                                 required
                             />
@@ -86,15 +130,28 @@ const ContactSection = () => {
                                 value={formData.message}
                                 onChange={(e) => setFormData({ ...formData, message: e.target.value })}
                                 rows={4}
-                                className="w-full bg-muted/30 border border-muted-foreground/30 focus:border-accent hover:border-accent/40 rounded px-3 py-2 text-sm font-body text-foreground focus:outline-none transition-all duration-300 focus:shadow-[0_0_10px_rgba(195,100,50,0.15)] resize-none"
+                                className="w-full bg-muted/30 border border-muted-foreground/30 focus:border-accent hover:border-accent/40 rounded px-3 py-2 text-sm font-body text-foreground focus:outline-none transition-all duration-300 focus:shadow-[var(--glow-shadow-secondary)] resize-none"
                                 placeholder="Your message..."
                                 required
                             />
                         </div>
+
+                        {/* Honeypot field */}
+                        <div className="hidden" aria-hidden="true">
+                            <input
+                                type="text"
+                                name="website"
+                                value={formData.website || ""}
+                                onChange={(e) => setFormData({ ...formData, website: e.target.value })}
+                                tabIndex="-1"
+                                autoComplete="off"
+                            />
+                        </div>
+
                         <motion.button
                             type="submit"
                             disabled={isSubmitting}
-                            whileHover={!isSubmitting ? { scale: 1.02, boxShadow: "0 0 20px hsl(0 85% 50% / 0.3)" } : {}}
+                            whileHover={!isSubmitting ? { scale: 1.02, boxShadow: "var(--glow-shadow)" } : {}}
                             whileTap={!isSubmitting ? { scale: 0.98 } : {}}
                             className={`w-full py-2.5 border ${isSubmitting ? 'border-primary/30 bg-primary/5 text-primary/50' : 'border-primary/60 bg-primary/10 text-primary hover:bg-primary/20'} font-display text-xs tracking-[0.2em] uppercase transition-colors flex items-center justify-center gap-2`}
                         >
@@ -122,9 +179,9 @@ const ContactSection = () => {
 
                         <div className="space-y-4">
                             {[
-                                { icon: Mail, label: "Email", value: "goyalaniket2006@gmail.com", href: "mailto:goyalaniket2006@gmail.com" },
-                                { icon: Github, label: "GitHub", value: "github.com/aniketgoyal12", href: "https://github.com/aniketgoyal12" },
-                                { icon: Linkedin, label: "LinkedIn", value: "linkedin.com/in/aniketgoyal-ag/", href: "https://linkedin.com/in/aniketgoyal-ag/" },
+                                { icon: Mail, label: "Email", value: profile.owner_email, href: `mailto:${profile.owner_email}` },
+                                { icon: Github, label: "GitHub", value: profile.github_label, href: profile.github_url },
+                                { icon: Linkedin, label: "LinkedIn", value: profile.linkedin_label, href: profile.linkedin_url },
                             ].map((channel, i) => (
                                 <motion.a
                                     key={channel.label}
@@ -158,7 +215,7 @@ const ContactSection = () => {
                 className="mt-24 text-center border-t border-border/30 pt-8"
             >
                 <p className="text-xs font-display text-muted-foreground tracking-[0.3em] uppercase">
-                    Engineered by Aniket Goyal · {new Date().getFullYear()}
+                    Engineered by {profile.first_name} {profile.last_name} · {new Date().getFullYear()}
                 </p>
                 <p className="text-[10px] font-display text-muted-foreground/50 tracking-widest mt-2">
                     JARVIS Interface v2.0 — All Systems Operational

@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<body style="margin:0; padding:0; background-color:#f4f4f4; font-family: Arial, Helvetica, sans-serif;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#f4f4f4; padding:24px 0;">
+    <tr>
+      <td align="center">
+        <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="background-color:#ffffff; border-radius:8px; overflow:hidden; border:1px solid #e0e0e0;">
+          <tr>
+            <td style="background-color:#1a1a1a; padding:20px 32px;">
+              <span style="color:#E63946; font-size:12px; letter-spacing:2px; text-transform:uppercase; font-weight:bold;">Portfolio Transmission</span>
+              <h1 style="color:#ffffff; font-size:20px; margin:8px 0 0;">New Contact Received</h1>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:32px;">
+              <p style="color:#333333; font-size:15px; line-height:1.6; margin:0 0 20px;">
+                Someone reached out through your portfolio's contact form. Details below:
+              </p>
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:20px;">
+                <tr>
+                  <td style="padding:8px 0; border-bottom:1px solid #eeeeee; color:#888888; font-size:13px; width:100px;">Name</td>
+                  <td style="padding:8px 0; border-bottom:1px solid #eeeeee; color:#1a1a1a; font-size:14px; font-weight:bold;">{{sender_name}}</td>
+                </tr>
+                <tr>
+                  <td style="padding:8px 0; border-bottom:1px solid #eeeeee; color:#888888; font-size:13px;">Email</td>
+                  <td style="padding:8px 0; border-bottom:1px solid #eeeeee; color:#1a1a1a; font-size:14px;">
+                    <a href="mailto:{{sender_email}}" style="color:#B3261E; text-decoration:none;">{{sender_email}}</a>
+                  </td>
+                </tr>
+              </table>
+              <p style="color:#888888; font-size:13px; margin:0 0 8px; text-transform:uppercase; letter-spacing:1px;">Message</p>
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#f9f9f9; border-left:3px solid #E63946; border-radius:0 4px 4px 0;">
+                <tr>
+                  <td style="padding:16px;">
+                    <p style="color:#333333; font-size:14px; line-height:1.6; margin:0; white-space:pre-wrap;">{{message}}</p>
+                  </td>
+                </tr>
+              </table>
+              <p style="color:#aaaaaa; font-size:12px; margin:24px 0 0;">
+                Reply directly to this sender at the email address above.
+              </p>
+            </td>
+          </tr>
+          <tr>
+            <td style="background-color:#fafafa; padding:16px 32px; border-top:1px solid #eeeeee;">
+              <p style="color:#aaaaaa; font-size:11px; margin:0;">Sent automatically from your portfolio contact form.</p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>

@@ -6,12 +6,13 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "next-themes";
 import Index from "./pages/Index.jsx";
 import NotFound from "./pages/NotFound.jsx";
+import AdminPage from "./pages/AdminPage.jsx";
 
 const queryClient = new QueryClient();
 
 const App = () => (
     <QueryClientProvider client={queryClient}>
-        <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
+        <ThemeProvider attribute="data-theme" defaultTheme="dark" enableSystem={false}>
             <TooltipProvider>
                 <Toaster />
                 <Sonner />
@@ -19,6 +20,7 @@ const App = () => (
                     <Routes>
                         <Route path="/" element={<Index />} />
                         <Route path="/project/:projectId" element={<Index />} />
+                        <Route path="/admin" element={<AdminPage />} />
                         {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                         <Route path="*" element={<NotFound />} />
                     </Routes>

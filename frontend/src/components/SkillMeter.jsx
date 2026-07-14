@@ -1,13 +1,20 @@
 import { motion } from "framer-motion";
 
 const colorMap = {
-    primary: "hsl(0 85% 50%)",
-    secondary: "hsl(43 96% 56%)",
-    accent: "hsl(195 100% 50%)",
+    primary: "var(--accent-red)",
+    secondary: "var(--accent-gold)",
+    accent: "var(--accent-blue)",
+};
+
+const shadowMap = {
+    primary: "var(--glow-shadow)",
+    secondary: "var(--glow-shadow-secondary)",
+    accent: "var(--glow-shadow-accent)",
 };
 
 const SkillMeter = ({ label, color = "accent", delay = 0 }) => {
     const highlightColor = colorMap[color] || colorMap.accent;
+    const highlightShadow = shadowMap[color] || shadowMap.accent;
 
     // Optimize font size and tracking based on label length to prevent overflow
     const isLong = label.length > 12;
@@ -28,7 +35,7 @@ const SkillMeter = ({ label, color = "accent", delay = 0 }) => {
                 className="absolute left-0 bottom-0 h-[3px] w-full origin-left scale-x-0 opacity-0 transition-all duration-300 ease-out group-hover:scale-x-100 group-hover:opacity-100"
                 style={{ 
                     backgroundColor: highlightColor,
-                    boxShadow: `0 0 10px ${highlightColor}` 
+                    boxShadow: highlightShadow
                 }}
             />
             <span className={`relative z-10 font-display text-foreground/90 uppercase text-center whitespace-normal break-words w-full ${textSizeClass}`}>

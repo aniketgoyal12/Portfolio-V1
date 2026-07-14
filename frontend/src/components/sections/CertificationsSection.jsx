@@ -2,22 +2,42 @@ import SectionHeader from "@/components/SectionHeader.jsx";
 import HudCard from "@/components/HudCard.jsx";
 import { motion } from "framer-motion";
 import { ShieldCheck } from "lucide-react";
+import { useState, useEffect } from "react";
+import { apiFetch } from "@/utils/api";
 
-const certifications = [
-   {
-    title: "Meta Front-End Developer Professional Certificate",
-    issuer: "Coursera",
-    status: "UNLOCKED",
-},
-{
-    title: "GenAI Bootcamp",
-    issuer: "Coding Blocks",
-    status: "UNLOCKED",
-},
-
+const defaultCertifications = [
+    {
+        title: "Meta Front-End Developer Professional Certificate",
+        issuer: "Coursera",
+        status: "UNLOCKED",
+    },
+    {
+        title: "GenAI Bootcamp",
+        issuer: "Coding Blocks",
+        status: "UNLOCKED",
+    },
 ];
 
 const CertificationsSection = () => {
+    const [certifications, setCertifications] = useState(defaultCertifications);
+
+    useEffect(() => {
+        const fetchCertificates = async () => {
+            try {
+                const res = await apiFetch("/api/certifications/");
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data && data.length > 0) {
+                        setCertifications(data);
+                    }
+                }
+            } catch (e) {
+                console.warn("Using local certifications upgrade grids fallback", e);
+            }
+        };
+        fetchCertificates();
+    }, []);
+
     return (
         <section id="certifications" className="py-24 px-4 md:px-8 max-w-6xl mx-auto">
             <SectionHeader title="Upgrades Unlocked" subtitle="// certifications.scan()" />

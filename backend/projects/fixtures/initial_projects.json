@@ -1,0 +1,129 @@
+[
+  {
+    "model": "projects.project",
+    "pk": 1,
+    "fields": {
+      "slug_id": "cag-co",
+      "name": "CAG-CO",
+      "codename": "SYS-001",
+      "description": "Static website for a CA firm",
+      "long_description": "Professional digital presence for financial consultancy and accounting services.",
+      "live_link": "#",
+      "repo_link": "#",
+      "image": "",
+      "category": "Frontend",
+      "tech_stack": ["React", "Vite", "Tailwind CSS"],
+      "highlights": [
+        "Interactive user interface with smooth scrolling and animations",
+        "Modern typographic layout built for financial clarity",
+        "Fully responsive pages optimized for desktop, tablet, and mobile devices",
+        "Structured services index detailing CA audits, taxation, and consultancy offerings"
+      ],
+      "featured": true,
+      "created_at": "2026-07-13T12:00:00Z",
+      "updated_at": "2026-07-13T12:00:00Z"
+    }
+  },
+  {
+    "model": "projects.project",
+    "pk": 2,
+    "fields": {
+      "slug_id": "expense-tracker",
+      "name": "Expense Tracker",
+      "codename": "SYS-002",
+      "description": "Responsive expense tracking system with categorized transactions and real-time balance updates.",
+      "long_description": "Provide clear visibility into personal spending through structured data and instant feedback.",
+      "live_link": "#",
+      "repo_link": "#",
+      "image": "",
+      "category": "Frontend",
+      "tech_stack": ["React", "JavaScript", "CSS"],
+      "highlights": [
+        "Dynamic transaction logs to add and delete expenditures",
+        "Real-time wallet and bank balance auto-calculations",
+        "Categorized expenses (e.g. food, transit, leisure) for budget optimization",
+        "Responsive dashboard interface with instant input validation"
+      ],
+      "featured": false,
+      "created_at": "2026-07-13T12:00:00Z",
+      "updated_at": "2026-07-13T12:00:00Z"
+    }
+  },
+  {
+    "model": "projects.project",
+    "pk": 3,
+    "fields": {
+      "slug_id": "portfolio",
+      "name": "Personal Portfolio",
+      "codename": "SYS-003",
+      "description": "Responsive personal portfolio showcasing projects, skills, and certifications with smooth navigation.",
+      "long_description": "Professional showcase platform to demonstrate full-stack development and system design skills.",
+      "live_link": "#",
+      "repo_link": "#",
+      "image": "",
+      "category": "Frontend",
+      "tech_stack": ["HTML", "CSS", "JavaScript", "React"],
+      "highlights": [
+        "High-tech futuristic J.A.R.V.I.S. HUD design system",
+        "Custom animated SVG Arc Reactor with interactive core glowing states",
+        "Suit Diagnostics dashboard showing technical capabilities and skill meters",
+        "Responsive layout configured for optimal rendering on all device widths"
+      ],
+      "featured": false,
+      "created_at": "2026-07-13T12:00:00Z",
+      "updated_at": "2026-07-13T12:00:00Z"
+    }
+  },
+  {
+    "model": "projects.project",
+    "pk": 4,
+    "fields": {
+      "slug_id": "snaplink",
+      "name": "SnapLink — URL Shortener with Auth & Admin Panel",
+      "codename": "SYS-004",
+      "description": "A full-stack URL shortener built with Flask and MySQL, with routes, controllers, services, and models kept as separate layers rather than mixed together.",
+      "long_description": "business logic lives in a dedicated service layer, decoupled from HTTP routing",
+      "live_link": "#",
+      "repo_link": "#",
+      "image": "",
+      "category": "Backend, Full-Stack",
+      "tech_stack": ["Flask 3.1", "SQLAlchemy 2.0", "MySQL", "Flask-JWT-Extended", "Flask-Bcrypt", "Flask-Migrate"],
+      "highlights": [
+        "JWT-based user authentication (register/login with encrypted password hashing)",
+        "User dashboard: shorten URLs, set custom expiration dates, track click counts, delete links",
+        "Admin panel: manage users, disable/delete any link, toggle link status",
+        "Custom error pages for broken/disabled/expired links (instead of raw JSON errors)",
+        "Dark-slate UI built with vanilla HTML/CSS/JS"
+      ],
+      "featured": false,
+      "created_at": "2026-07-13T12:00:00Z",
+      "updated_at": "2026-07-13T12:00:00Z"
+    }
+  },
+  {
+    "model": "projects.project",
+    "pk": 5,
+    "fields": {
+      "slug_id": "medora",
+      "name": "Medora — Telemedicine Platform",
+      "codename": "SYS-005",
+      "description": "A full-stack telemedicine platform supporting four user roles (patient, doctor, admin, superAdmin), covering appointment booking, doctor availability, e-prescriptions, medical records, and doctor ratings.",
+      "long_description": "Clean separation of concerns on the backend (routes → controllers → models) with 8+ MongoDB collections modeling real clinical workflows.",
+      "live_link": "#",
+      "repo_link": "#",
+      "image": "",
+      "category": "Full-Stack, Backend",
+      "tech_stack": ["React 18", "Express 5", "MongoDB", "Zustand", "Tailwind CSS", "Cloudinary", "Nodemailer"],
+      "highlights": [
+        "Role-based access control across 4 user types (patient, doctor, admin, superAdmin)",
+        "Appointment booking tied to doctor-defined weekly availability",
+        "Prescription and medical record management with Cloudinary file uploads",
+        "Doctor rating and feedback systems",
+        "Email OTP flow for verification and password resets using Nodemailer"
+      ],
+      "featured": false,
+      "created_at": "2026-07-13T12:00:00Z",
+      "updated_at": "2026-07-13T12:00:00Z"
+    }
+  }
+]

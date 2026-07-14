@@ -1,22 +1,48 @@
 import SectionHeader from "@/components/SectionHeader.jsx";
 import { motion } from "framer-motion";
+import { useState, useEffect } from "react";
+import { apiFetch } from "@/utils/api";
 
-const experiences = [
+const defaultExperiences = [
     {
         role: "Full Stack Developer Intern",
         org: "Tech Organization",
         period: "2026",
         contributions: [
-    "Developed RESTful APIs for a Project Management System using Node.js and Express",
-    "Implemented role-based access control with JWT authentication",
-    "Designed project and task modules with auto-generated code logic and MongoDB",
-    "Structured and documented APIs to streamline intern-manager task workflow"
-],
-
+            "Developed RESTful APIs for a Project Management System using Node.js and Express",
+            "Implemented role-based access control with JWT authentication",
+            "Designed project and task modules with auto-generated code logic and MongoDB",
+            "Structured and documented APIs to streamline intern-manager task workflow"
+        ],
     },
 ];
 
 const ExperienceSection = () => {
+    const [experiences, setExperiences] = useState(defaultExperiences);
+
+    useEffect(() => {
+        const fetchMissions = async () => {
+            try {
+                const res = await apiFetch("/api/missions/");
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data && data.length > 0) {
+                        const mapped = data.map(item => ({
+                            role: item.role,
+                            org: item.organization,
+                            period: item.period,
+                            contributions: item.contributions || []
+                        }));
+                        setExperiences(mapped);
+                    }
+                }
+            } catch (e) {
+                console.warn("Using local timeline fallback experiences", e);
+            }
+        };
+        fetchMissions();
+    }, []);
+
     return (
         <section id="experience" className="py-24 px-4 md:px-8 max-w-6xl mx-auto">
             <SectionHeader title="Mission Logs" subtitle="// experience.timeline()" />

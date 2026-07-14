@@ -1,7 +1,7 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect } from "react";
-import { useTheme } from "next-themes";
-import { Sun, Moon, Menu, X } from "lucide-react";
+import { Menu, X } from "lucide-react";
+import { apiFetch } from "@/utils/api";
 
 const navItems = [
     { label: "Overview", href: "#about" },
@@ -12,22 +12,57 @@ const navItems = [
     { label: "Transmit", href: "#contact" },
 ];
 
+const containerVariants = {
+    hidden: { opacity: 0 },
+    show: {
+        opacity: 1,
+        transition: {
+            staggerChildren: 0.08,
+        }
+    }
+};
+
+const itemVariants = {
+    hidden: { 
+        opacity: 0, 
+        x: -30 
+    },
+    show: { 
+        opacity: [0, 0.8, 0.2, 1], // flickering HUD lock-in effect
+        x: 0,
+        transition: {
+            x: { type: "spring", stiffness: 120, damping: 14 },
+            opacity: { duration: 0.35, ease: "linear" }
+        }
+    }
+};
+
 const HudNav = () => {
     const [scrolled, setScrolled] = useState(false);
     const [mobileOpen, setMobileOpen] = useState(false);
-    const { theme, setTheme } = useTheme();
-    const [mounted, setMounted] = useState(false);
+    const [logoInitials, setLogoInitials] = useState("AG");
 
     useEffect(() => {
-        setMounted(true);
         const onScroll = () => setScrolled(window.scrollY > 100);
         window.addEventListener("scroll", onScroll);
+        
+        const fetchLogo = async () => {
+            try {
+                const res = await apiFetch("/api/profile/");
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data && data.logo_initials) {
+                        setLogoInitials(data.logo_initials);
+                    }
+                }
+            } catch (e) {
+                console.warn("Using local brand fallback initials", e);
+            }
+        };
+        fetchLogo();
+
         return () => window.removeEventListener("scroll", onScroll);
     }, []);
-
-    const toggleTheme = () => {
-        setTheme(theme === "dark" ? "light" : "dark");
-    };
 
     return (
         <>
@@ -43,7 +78,7 @@ const HudNav = () => {
             >
                 <div className="max-w-6xl mx-auto px-4 md:px-8 py-3 flex items-center justify-between">
                     <a href="#" className="font-display text-sm tracking-[0.3em] text-primary text-glow">
-                        AG
+                        {logoInitials}
                     </a>
                     
                     <div className="flex items-center gap-4">
@@ -60,16 +95,7 @@ const HudNav = () => {
                             ))}
                         </div>
 
-                        {/* Theme Toggle Button */}
-                        {mounted && (
-                            <button
-                                onClick={toggleTheme}
-                                aria-label="Toggle Theme"
-                                className="w-8 h-8 flex items-center justify-center border border-border text-muted-foreground hover:text-accent hover:border-accent/40 transition-colors bg-muted/10 rounded-sm animate-flicker"
-                            >
-                                {theme === "dark" ? <Sun size={15} /> : <Moon size={15} />}
-                            </button>
-                        )}
+
 
                         {/* Mobile Menu Toggle Button */}
                         <button
@@ -93,18 +119,24 @@ const HudNav = () => {
                         transition={{ duration: 0.3 }}
                         className="fixed inset-x-0 top-[57px] z-40 bg-background/95 backdrop-blur-md border-b border-border/50 md:hidden"
                     >
-                        <div className="flex flex-col py-6 px-6 gap-4">
+                        <motion.div 
+                            variants={containerVariants}
+                            initial="hidden"
+                            animate="show"
+                            className="flex flex-col py-6 px-6 gap-4"
+                        >
                             {navItems.map((item) => (
-                                <a
+                                <motion.a
                                     key={item.label}
                                     href={item.href}
+                                    variants={itemVariants}
                                     onClick={() => setMobileOpen(false)}
                                     className="py-2.5 px-4 font-display text-xs tracking-[0.2em] text-muted-foreground hover:text-accent border-b border-border/20 last:border-b-0 uppercase transition-colors"
                                 >
                                     {item.label}
-                                </a>
+                                </motion.a>
                             ))}
-                        </div>
+                        </motion.div>
                     </motion.div>
                 )}
             </AnimatePresence>

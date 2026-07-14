@@ -2,7 +2,7 @@ import SectionHeader from "@/components/SectionHeader.jsx";
 import HudCard from "@/components/HudCard.jsx";
 import { motion, AnimatePresence } from "framer-motion";
 import { ExternalLink, Github, X } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useSEO } from "@/hooks/useSEO.js";
 
@@ -98,13 +98,74 @@ const projects = [
 ];
 
 const ProjectsSection = () => {
+    const [projectsList, setProjectsList] = useState(projects);
     const [activeFilter, setActiveFilter] = useState("All");
     const { projectId } = useParams();
     const navigate = useNavigate();
+    const modalRef = useRef(null);
+    const previousFocusRef = useRef(null);
 
     const categories = ["All", "Frontend", "Backend", "Full-Stack"];
 
-    const activeProject = projects.find((p) => p.id === projectId);
+    useEffect(() => {
+        const fetchProjects = async () => {
+            try {
+                const res = await fetch("/api/projects/");
+                if (res.ok) {
+                    const data = await res.json();
+                    setProjectsList(data);
+                }
+            } catch (err) {
+                console.warn("Unable to connect to backend projects API, using fallback matrix static data.", err);
+            }
+        };
+        fetchProjects();
+    }, []);
+
+    const activeProject = projectId
+        ? projectsList.find((p) => String(p.id) === String(projectId) || p.slug_id === projectId)
+        : null;
+
+    // Escape key listener to close modal
+    useEffect(() => {
+        const handleKeyDown = (e) => {
+            if (e.key === "Escape" && activeProject) {
+                navigate("/");
+            }
+        };
+        window.addEventListener("keydown", handleKeyDown);
+        return () => window.removeEventListener("keydown", handleKeyDown);
+    }, [activeProject, navigate]);
+
+    // Body scroll lock when modal is open
+    useEffect(() => {
+        if (activeProject) {
+            document.body.style.overflow = "hidden";
+        } else {
+            document.body.style.overflow = "";
+        }
+        return () => {
+            document.body.style.overflow = "";
+        };
+    }, [activeProject]);
+
+    // Accessibility Focus Management
+    useEffect(() => {
+        if (activeProject) {
+            previousFocusRef.current = document.activeElement;
+            const timer = setTimeout(() => {
+                if (modalRef.current) {
+                    modalRef.current.focus();
+                }
+            }, 50);
+            return () => clearTimeout(timer);
+        } else {
+            if (previousFocusRef.current) {
+                previousFocusRef.current.focus();
+                previousFocusRef.current = null;
+            }
+        }
+    }, [activeProject]);
 
     // Call dynamic SEO hook
     useSEO({
@@ -117,15 +178,23 @@ const ProjectsSection = () => {
         ogTitle: activeProject ? activeProject.name : "Aniket Goyal | Portfolio",
         ogDescription: activeProject ? activeProject.description : "Systems Engineer & Full Stack Developer Portfolio",
         ogUrl: activeProject 
-            ? `https://aniketgoyal.dev/project/${activeProject.id}` 
+            ? `https://aniketgoyal.dev/project/${activeProject.slug_id || activeProject.id}` 
             : "https://aniketgoyal.dev",
         ogImage: "/placeholder.svg"
     });
 
-    const filteredProjects = projects.filter((project) => {
+    const filteredProjects = projectsList.filter((project) => {
         if (activeFilter === "All") return true;
-        return project.tags.includes(activeFilter);
+        const cat = project.category || "";
+        const tags = project.tags || [];
+        return cat.includes(activeFilter) || tags.includes(activeFilter);
     });
+
+    // Helper to evaluate if source code and live links are valid (not empty or "#")
+    const getRepoLink = (p) => p.repo_link || p.github;
+    const getLiveLink = (p) => p.live_link || p.live;
+    const hasSourceCode = activeProject && getRepoLink(activeProject) && getRepoLink(activeProject).trim() !== "" && getRepoLink(activeProject).trim() !== "#";
+    const hasLiveLink = activeProject && getLiveLink(activeProject) && getLiveLink(activeProject).trim() !== "" && getLiveLink(activeProject).trim() !== "#";
 
     return (
         <section id="projects" className="py-24 px-4 md:px-8 max-w-6xl mx-auto">
@@ -152,8 +221,16 @@ const ProjectsSection = () => {
                 {filteredProjects.map((project, i) => (
                     <div 
                         key={project.id} 
-                        onClick={() => navigate(`/project/${project.id}`)}
-                        className="cursor-pointer"
+                        onClick={() => navigate(`/project/${project.slug_id || project.id}`)}
+                        className="cursor-pointer outline-none focus-visible:ring-1 focus-visible:ring-accent"
+                        tabIndex={0}
+                        id={`project-card-${project.slug_id || project.id}`}
+                        onKeyDown={(e) => {
+                            if (e.key === "Enter" || e.key === " ") {
+                                e.preventDefault();
+                                navigate(`/project/${project.slug_id || project.id}`);
+                            }
+                        }}
                     >
                         <HudCard
                             label={project.codename}
@@ -178,11 +255,11 @@ const ProjectsSection = () => {
                                     </p>
 
                                     <p className="text-sm font-body text-foreground/70 italic">
-                                        &quot;{project.purpose}&quot;
+                                        &quot;{project.long_description || project.purpose}&quot;
                                     </p>
 
                                     <div className="flex flex-wrap gap-2 pt-2">
-                                        {project.stack.map((tech) => (
+                                        {(project.tech_stack || project.stack || []).map((tech) => (
                                             <span
                                                 key={tech}
                                                 className="px-2 py-0.5 text-xs font-display tracking-wider border border-accent/30 text-accent/80"
@@ -195,13 +272,13 @@ const ProjectsSection = () => {
 
                                 <div className="flex md:flex-col gap-3 shrink-0" onClick={(e) => e.stopPropagation()}>
                                     <motion.a
-                                        href={project.github}
-                                        onClick={(e) => project.github === "#" && e.preventDefault()}
+                                        href={project.repo_link || project.github}
+                                        onClick={(e) => (project.repo_link === "#" || project.github === "#") && e.preventDefault()}
                                         whileHover={{ scale: 1.1 }}
                                         target="_blank"
                                         rel="noopener noreferrer"
                                         className={`w-10 h-10 flex items-center justify-center border transition-colors ${
-                                            project.github === "#"
+                                            (project.repo_link === "#" || project.github === "#")
                                                 ? "border-border text-muted-foreground/30 cursor-not-allowed"
                                                 : "border-border text-muted-foreground hover:text-foreground hover:border-foreground/40"
                                         }`}
@@ -209,13 +286,13 @@ const ProjectsSection = () => {
                                         <Github size={18} />
                                     </motion.a>
                                     <motion.a
-                                        href={project.live}
-                                        onClick={(e) => project.live === "#" && e.preventDefault()}
+                                        href={project.live_link || project.live}
+                                        onClick={(e) => (project.live_link === "#" || project.live === "#") && e.preventDefault()}
                                         whileHover={{ scale: 1.1 }}
                                         target="_blank"
                                         rel="noopener noreferrer"
                                         className={`w-10 h-10 flex items-center justify-center border transition-colors ${
-                                            project.live === "#"
+                                            (project.live_link === "#" || project.live === "#")
                                                 ? "border-border text-muted-foreground/30 cursor-not-allowed"
                                                 : "border-border text-muted-foreground hover:text-accent hover:border-accent/40"
                                         }`}
@@ -244,11 +321,13 @@ const ProjectsSection = () => {
 
                         {/* Modal Card */}
                         <motion.div
+                            ref={modalRef}
+                            tabIndex={-1}
                             initial={{ opacity: 0, scale: 0.95, y: 20 }}
                             animate={{ opacity: 1, scale: 1, y: 0 }}
                             exit={{ opacity: 0, scale: 0.95, y: 20 }}
                             transition={{ type: "spring", duration: 0.5 }}
-                            className="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto bg-card border border-border p-6 md:p-8 shadow-2xl z-10 rounded-sm"
+                            className="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto bg-card border border-border p-6 md:p-8 shadow-2xl z-10 rounded-sm focus:outline-none"
                         >
                             {/* Glowing Corners */}
                             <div className="absolute top-0 left-0 w-8 h-8 border-t-2 border-l-2 border-accent/60 pointer-events-none" />
@@ -261,15 +340,16 @@ const ProjectsSection = () => {
                             <div className="flex justify-between items-start border-b border-border pb-4 mb-6">
                                 <div>
                                     <span className="text-xs font-display text-accent tracking-[0.2em] uppercase block mb-1">
-                                        System Diagnostic // {activeProject.codename}
+                                        SYSTEM DIAGNOSTIC // {activeProject.codename || "[DATA MISSING: CODENAME PENDING]"}
                                     </span>
                                     <h2 className="text-xl md:text-2xl font-display text-foreground tracking-wider uppercase">
-                                        {activeProject.name}
+                                        {activeProject.name || "[DATA MISSING: NAME PENDING]"}
                                     </h2>
                                 </div>
                                 <button
                                     onClick={() => navigate("/")}
                                     className="p-1.5 border border-border hover:border-primary text-muted-foreground hover:text-primary transition-colors bg-muted/20"
+                                    aria-label="Close modal"
                                 >
                                     <X size={18} />
                                 </button>
@@ -280,75 +360,91 @@ const ProjectsSection = () => {
                                 <div>
                                     <h4 className="text-xs font-display text-muted-foreground tracking-[0.2em] uppercase mb-2">{"// core_description"}</h4>
                                     <p className="text-foreground font-body text-base leading-relaxed">
-                                        {activeProject.description}
+                                        {activeProject.description || "[DATA MISSING: CORE_DESCRIPTION PENDING]"}
                                     </p>
                                 </div>
 
                                 <div>
                                     <h4 className="text-xs font-display text-muted-foreground tracking-[0.2em] uppercase mb-2">{"// system_architecture"}</h4>
-                                    <p className="text-foreground/80 font-body text-sm italic">
-                                        &quot;{activeProject.purpose}&quot;
-                                    </p>
+                                    { (activeProject.long_description || activeProject.purpose) ? (
+                                        <p className="text-foreground/85 font-body text-sm italic">
+                                            &quot;{activeProject.long_description || activeProject.purpose}&quot;
+                                        </p>
+                                    ) : (
+                                        <p className="text-primary font-body text-sm italic">
+                                            [DATA MISSING: SYSTEM_ARCHITECTURE PENDING]
+                                        </p>
+                                    )}
                                 </div>
 
-                                {activeProject.features && (
-                                    <div>
-                                        <h4 className="text-xs font-display text-muted-foreground tracking-[0.2em] uppercase mb-2">{"// key_features"}</h4>
+                                <div>
+                                    <h4 className="text-xs font-display text-muted-foreground tracking-[0.2em] uppercase mb-2">{"// key_features"}</h4>
+                                    { (activeProject.highlights || activeProject.features) && (activeProject.highlights || activeProject.features).length > 0 ? (
                                         <ul className="grid sm:grid-cols-2 gap-3 text-sm font-body text-muted-foreground">
-                                            {activeProject.features.map((feature, idx) => (
+                                            {(activeProject.highlights || activeProject.features).map((feature, idx) => (
                                                 <li key={idx} className="flex items-start gap-2">
                                                     <span className="mt-1.5 w-1.5 h-1.5 bg-accent shrink-0" />
                                                     <span>{feature}</span>
                                                 </li>
                                             ))}
                                         </ul>
-                                    </div>
-                                )}
+                                    ) : (
+                                        <p className="text-primary font-body text-sm italic">
+                                            [DATA MISSING: KEY_FEATURES PENDING]
+                                        </p>
+                                    )}
+                                </div>
 
                                 <div>
                                     <h4 className="text-xs font-display text-muted-foreground tracking-[0.2em] uppercase mb-2">{"// tech_stack"}</h4>
-                                    <div className="flex flex-wrap gap-2">
-                                        {activeProject.stack.map((tech) => (
-                                            <span
-                                                key={tech}
-                                                className="px-2.5 py-0.5 text-xs font-display tracking-wider border border-accent/30 text-accent/80 bg-accent/5"
-                                            >
-                                                {tech}
-                                            </span>
-                                        ))}
-                                    </div>
+                                    { (activeProject.tech_stack || activeProject.stack) && (activeProject.tech_stack || activeProject.stack).length > 0 ? (
+                                        <div className="flex flex-wrap gap-2">
+                                            {(activeProject.tech_stack || activeProject.stack).map((tech) => (
+                                                <span
+                                                    key={tech}
+                                                    className="px-2.5 py-0.5 text-xs font-display tracking-wider border border-accent/30 text-accent/80 bg-accent/5"
+                                                >
+                                                    {tech}
+                                                </span>
+                                            ))}
+                                        </div>
+                                    ) : (
+                                        <p className="text-primary font-body text-sm italic">
+                                            [DATA MISSING: TECH_STACK PENDING]
+                                        </p>
+                                    )}
                                 </div>
                             </div>
 
                             {/* Modal Footer */}
                             <div className="flex justify-end gap-4 border-t border-border pt-6 mt-8">
                                 <a
-                                    href={activeProject.github}
-                                    onClick={(e) => activeProject.github === "#" && e.preventDefault()}
-                                    target="_blank"
+                                    href={hasSourceCode ? getRepoLink(activeProject) : undefined}
+                                    onClick={(e) => !hasSourceCode && e.preventDefault()}
+                                    target={hasSourceCode ? "_blank" : undefined}
                                     rel="noopener noreferrer"
                                     className={`px-4 py-2 border font-display text-xs tracking-wider uppercase flex items-center gap-2 transition-colors ${
-                                        activeProject.github === "#"
+                                        !hasSourceCode
                                             ? "border-muted-foreground/20 text-muted-foreground/40 cursor-not-allowed"
                                             : "border-border text-foreground hover:border-foreground/50 hover:bg-muted/10"
                                     }`}
                                 >
                                     <Github size={14} />
-                                    Source Code {activeProject.github === "#" && "(Pending)"}
+                                    SOURCE CODE {!hasSourceCode && "(PENDING)"}
                                 </a>
                                 <a
-                                    href={activeProject.live}
-                                    onClick={(e) => activeProject.live === "#" && e.preventDefault()}
-                                    target="_blank"
+                                    href={hasLiveLink ? getLiveLink(activeProject) : undefined}
+                                    onClick={(e) => !hasLiveLink && e.preventDefault()}
+                                    target={hasLiveLink ? "_blank" : undefined}
                                     rel="noopener noreferrer"
                                     className={`px-4 py-2 border font-display text-xs tracking-wider uppercase flex items-center gap-2 transition-colors ${
-                                        activeProject.live === "#"
+                                        !hasLiveLink
                                             ? "border-accent/20 bg-accent/5 text-accent/50 cursor-not-allowed"
                                             : "border-accent/60 bg-accent/10 text-accent hover:bg-accent/20"
                                     }`}
                                 >
                                     <ExternalLink size={14} />
-                                    Live Mission {activeProject.live === "#" && "(Pending)"}
+                                    LIVE MISSION {!hasLiveLink && "(PENDING)"}
                                 </a>
                             </div>
                         </motion.div>

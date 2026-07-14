@@ -1,15 +1,45 @@
 import SectionHeader from "@/components/SectionHeader.jsx";
 import HudCard from "@/components/HudCard.jsx";
 import { motion } from "framer-motion";
+import { useEffect, useState } from "react";
+import { apiFetch } from "@/utils/api";
 
-const stats = [
-    { label: "Stack", value: "MERN" },
-    { label: "Focus", value: "Full Stack" },
-    { label: "Approach", value: "System Design" },
-    { label: "Status", value: "Active" },
-];
+const defaultProfile = {
+    bio_p1: "Computer Science student and Full Stack Developer who approaches every project like building a high-performance system. Specializing in the MERN stack with a deep focus on scalable architecture, secure authentication, and production-grade engineering.",
+    bio_p2: "From audit management platforms to real-time expense trackers, every system I build prioritizes reliability, modularity, and clean engineering. I don't just write code — I architect solutions that scale under pressure.",
+    stack: "MERN",
+    experience: "Full Stack — 1 yr projects",
+    availability: "Open to internships",
+    status: "Active"
+};
 
 const AboutSection = () => {
+    const [profile, setProfile] = useState(defaultProfile);
+
+    useEffect(() => {
+        const fetchProfile = async () => {
+            try {
+                const response = await apiFetch("/api/profile/");
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data && data.bio_p1) {
+                        setProfile(data);
+                    }
+                }
+            } catch (error) {
+                console.warn("Failed to fetch profile settings, utilizing local fallback system overview.", error);
+            }
+        };
+        fetchProfile();
+    }, []);
+
+    const stats = [
+        { label: "Stack", value: profile.stack || "MERN" },
+        { label: "Availability", value: profile.availability || "Open to internships" },
+        { label: "Experience", value: profile.experience || "Full Stack — 1 yr projects" },
+        { label: "Status", value: profile.status || "Active" },
+    ];
+
     return (
         <section id="about" className="py-24 px-4 md:px-8 max-w-6xl mx-auto">
             <SectionHeader title="System Overview" subtitle="// profile.init()" />
@@ -17,14 +47,13 @@ const AboutSection = () => {
             <div className="grid md:grid-cols-3 gap-6">
                 <HudCard label="Bio" className="md:col-span-2" delay={0.1}>
                     <p className="text-foreground font-body text-lg leading-relaxed mb-4">
-                        Computer Science student and Full Stack Developer who approaches every project like building a high-performance system.
-                        Specializing in the MERN stack with a deep focus on scalable architecture, secure authentication, and production-grade engineering.
+                        {profile.bio_p1}
                     </p>
-                    <p className="text-muted-foreground font-body text-base leading-relaxed">
-                        From audit management platforms to real-time expense trackers, every system I build prioritizes
-                        reliability, modularity, and clean engineering. I don&apos;t just write code — I architect solutions
-                        that scale under pressure.
-                    </p>
+                    {profile.bio_p2 && (
+                        <p className="text-muted-foreground font-body text-base leading-relaxed">
+                            {profile.bio_p2}
+                        </p>
+                    )}
                 </HudCard>
 
                 <HudCard label="Diagnostics" variant="accent" delay={0.3}>
