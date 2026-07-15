@@ -16,7 +16,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Helper for parsing CSV environment variables safely
 def parse_csv_env(var_name, default=""):
     value = os.getenv(var_name, default)
-    return [item.strip() for item in value.split(",") if item.strip()]
+    return [item.strip().rstrip('/') for item in value.split(",") if item.strip()]
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-6v!u(ou#3bv!%3nclgxn9h#z3_0j*m*z=!uc4z0f#_2irr4n*p')
@@ -152,6 +152,9 @@ CSRF_COOKIE_SECURE = os.getenv('CSRF_COOKIE_SECURE', str(not DEBUG)).lower() in 
 SESSION_COOKIE_HTTPONLY = True
 CSRF_COOKIE_HTTPONLY = False
 
+SESSION_COOKIE_SAMESITE = 'None' if SESSION_COOKIE_SECURE else 'Lax'
+CSRF_COOKIE_SAMESITE = 'None' if CSRF_COOKIE_SECURE else 'Lax'
+
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
 SIMPLE_JWT = {
@@ -169,8 +172,8 @@ REST_FRAMEWORK = {
         'rest_framework.throttling.AnonRateThrottle',
     ],
     'DEFAULT_THROTTLE_RATES': {
-        'anon': '5/minute',
-        'contact': '3/minute',
+        'anon': os.getenv('THROTTLE_ANON_RATE', '100/minute'),
+        'contact': os.getenv('THROTTLE_CONTACT_RATE', '10/minute'),
     }
 }
 
