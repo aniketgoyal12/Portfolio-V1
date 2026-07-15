@@ -190,6 +190,12 @@ CORS_ALLOWED_ORIGINS = parse_csv_env('CORS_ALLOWED_ORIGINS', 'http://localhost:5
 CSRF_TRUSTED_ORIGINS = parse_csv_env('CSRF_TRUSTED_ORIGINS', 'http://localhost:5173,http://127.0.0.1:5173', prepend_https=True)
 CORS_ALLOW_CREDENTIALS = True
 
+print("=== SETTINGS DIAGNOSTICS ===")
+print("ALLOWED_HOSTS:", ALLOWED_HOSTS)
+print("CORS_ALLOWED_ORIGINS:", CORS_ALLOWED_ORIGINS)
+print("CSRF_TRUSTED_ORIGINS:", CSRF_TRUSTED_ORIGINS)
+print("============================")
+
 # Email Configuration
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = os.getenv('EMAIL_HOST', 'smtp.gmail.com')
