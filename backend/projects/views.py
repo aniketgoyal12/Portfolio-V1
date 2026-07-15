@@ -24,7 +24,7 @@ logger = logging.getLogger(__name__)
 COOKIE_KWARGS = lambda path='/': {
     'httponly': True,
     'secure': settings.SIMPLE_JWT_COOKIE_SECURE,
-    'samesite': 'Lax',
+    'samesite': 'None' if settings.SIMPLE_JWT_COOKIE_SECURE else 'Lax',
     'path': path,
 }
 
@@ -34,7 +34,15 @@ class CSRFTokenView(APIView):
     permission_classes = [permissions.AllowAny]
 
     def get(self, request):
-        return Response({"detail": "CSRF cookie set"})
+        return Response({
+            "detail": "CSRF cookie set",
+            "diagnostics": {
+                "ALLOWED_HOSTS": settings.ALLOWED_HOSTS,
+                "CORS_ALLOWED_ORIGINS": settings.CORS_ALLOWED_ORIGINS,
+                "CSRF_TRUSTED_ORIGINS": settings.CSRF_TRUSTED_ORIGINS,
+                "DEBUG": settings.DEBUG,
+            }
+        })
 
 
 class LoginView(APIView):
