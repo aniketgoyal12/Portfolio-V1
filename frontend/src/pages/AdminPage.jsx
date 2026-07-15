@@ -1516,17 +1516,19 @@ const AdminPage = () => {
                                         <label className="text-[10px] font-display text-muted-foreground tracking-widest uppercase block mb-1">
                                             Category *
                                         </label>
-                                        <select
+                                        <input
+                                            type="text"
+                                            list="project-categories"
                                             value={formCategory}
                                             onChange={(e) => setFormCategory(e.target.value)}
+                                            placeholder="Select or type new category..."
                                             className="w-full bg-muted/30 border border-muted-foreground/30 focus:border-accent rounded px-3 py-2 text-sm font-body text-foreground focus:outline-none transition-all duration-300"
-                                        >
-                                            <option value="Frontend" className="bg-background">Frontend</option>
-                                            <option value="Backend" className="bg-background">Backend</option>
-                                            <option value="Full-Stack" className="bg-background">Full-Stack</option>
-                                            <option value="Backend, Full-Stack" className="bg-background">Backend, Full-Stack</option>
-                                            <option value="Full-Stack, Backend" className="bg-background">Full-Stack, Backend</option>
-                                        </select>
+                                        />
+                                        <datalist id="project-categories">
+                                            {Array.from(new Set(projectsList.map(p => p.category).filter(Boolean))).map(cat => (
+                                                <option key={cat} value={cat} />
+                                            ))}
+                                        </datalist>
                                     </div>
                                 </div>
 

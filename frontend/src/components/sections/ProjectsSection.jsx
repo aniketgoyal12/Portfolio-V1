@@ -105,7 +105,7 @@ const ProjectsSection = () => {
     const modalRef = useRef(null);
     const previousFocusRef = useRef(null);
 
-    const categories = ["All", "Frontend", "Backend", "Full-Stack"];
+    const categories = ["All", ...Array.from(new Set(projectsList.map(p => p.category).filter(Boolean)))];
 
     useEffect(() => {
         const fetchProjects = async () => {
