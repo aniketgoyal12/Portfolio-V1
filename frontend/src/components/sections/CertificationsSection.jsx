@@ -1,7 +1,7 @@
 import SectionHeader from "@/components/SectionHeader.jsx";
 import HudCard from "@/components/HudCard.jsx";
 import { motion } from "framer-motion";
-import { ShieldCheck } from "lucide-react";
+import { ShieldCheck, ExternalLink } from "lucide-react";
 import { useState, useEffect } from "react";
 import { apiFetch } from "@/utils/api";
 
@@ -56,7 +56,15 @@ const CertificationsSection = () => {
                                 <ShieldCheck size={20} />
                             </motion.div>
                             <div className="space-y-1">
-                                <h3 className="text-sm font-display text-foreground tracking-wider">{cert.title}</h3>
+                                <h3 className="text-sm font-display text-foreground tracking-wider">
+                                    {cert.link ? (
+                                        <a href={cert.link} target="_blank" rel="noopener noreferrer" className="hover:text-accent transition-colors underline inline-flex items-center gap-1.5">
+                                            {cert.title} <ExternalLink size={12} className="shrink-0" />
+                                        </a>
+                                    ) : (
+                                        cert.title
+                                    )}
+                                </h3>
                                 <p className="text-xs font-body text-muted-foreground">{cert.issuer}</p>
                                 <span className="inline-block text-[10px] font-display tracking-[0.3em] text-secondary/80 border border-secondary/20 px-2 py-0.5 mt-1">
                                     {cert.status}

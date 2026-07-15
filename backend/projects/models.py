@@ -72,8 +72,27 @@ class Certification(models.Model):
     title = models.CharField(max_length=250)
     issuer = models.CharField(max_length=200)
     status = models.CharField(max_length=100, default="UNLOCKED")
+    link = models.CharField(max_length=500, blank=True, default="")
     order = models.IntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return f"{self.title} ({self.issuer})"
+
+
+class ProjectCategory(models.Model):
+    name = models.CharField(max_length=100, unique=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.name
+
+
+class ContactMessage(models.Model):
+    name = models.CharField(max_length=200)
+    email = models.EmailField()
+    message = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Message from {self.name} ({self.email})"

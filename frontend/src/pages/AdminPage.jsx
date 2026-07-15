@@ -4,7 +4,7 @@ import { apiFetch, getCookie } from "@/utils/api";
 import { toast } from "sonner";
 import { 
     Lock, Plus, Edit2, Trash2, LogOut, Globe, Github, 
-    Sparkles, Check, X, ShieldAlert, AlertTriangle, ArrowLeft 
+    Sparkles, Check, X, ShieldAlert, AlertTriangle, ArrowLeft, ExternalLink
 } from "lucide-react";
 import HudCard from "@/components/HudCard";
 
@@ -67,11 +67,17 @@ const AdminPage = () => {
     const [certTitle, setCertTitle] = useState("");
     const [certIssuer, setCertIssuer] = useState("");
     const [certStatus, setCertStatus] = useState("UNLOCKED");
+    const [certLink, setCertLink] = useState("");
     const [certOrder, setCertOrder] = useState(0);
 
     // Projects Dashboard State
     const [projects, setProjects] = useState([]);
-    const [dashboardLoading, setDashboardLoading] = useState(false);
+    // Categories Dashboard State
+    const [categories, setCategories] = useState([]);
+    const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
+    const [editingCategory, setEditingCategory] = useState(null);
+    const [categoryName, setCategoryName] = useState("");
+    const [deleteCategoryConfirmId, setDeleteCategoryConfirmId] = useState(null);
 
     // Skills Dashboard State
     const [skills, setSkills] = useState([]);
@@ -192,11 +198,12 @@ const AdminPage = () => {
                 if (res.ok) {
                     setIsAuthenticated(true);
                     // Fetch lists for admin view
-                    const [projectsRes, skillsRes, missionsRes, certsRes] = await Promise.all([
+                    const [projectsRes, skillsRes, missionsRes, certsRes, catsRes] = await Promise.all([
                         apiFetch("/api/projects/"),
                         apiFetch("/api/skills/"),
                         apiFetch("/api/missions/"),
-                        apiFetch("/api/certifications/")
+                        apiFetch("/api/certifications/"),
+                        apiFetch("/api/categories/")
                     ]);
                     if (projectsRes.ok) {
                         const data = await projectsRes.json();
@@ -213,6 +220,10 @@ const AdminPage = () => {
                     if (certsRes.ok) {
                         const data = await certsRes.json();
                         setCertifications(data);
+                    }
+                    if (catsRes.ok) {
+                        const data = await catsRes.json();
+                        setCategories(data);
                     }
                     fetchProfile();
                 } else {
@@ -244,11 +255,12 @@ const AdminPage = () => {
                 toast.success("Identity verified. System unlocked.");
                 setIsAuthenticated(true);
                 // Load projects & skills
-                const [projectsRes, skillsRes, missionsRes, certsRes] = await Promise.all([
+                const [projectsRes, skillsRes, missionsRes, certsRes, catsRes] = await Promise.all([
                     apiFetch("/api/projects/"),
                     apiFetch("/api/skills/"),
                     apiFetch("/api/missions/"),
-                    apiFetch("/api/certifications/")
+                    apiFetch("/api/certifications/"),
+                    apiFetch("/api/categories/")
                 ]);
                 if (projectsRes.ok) {
                     const data = await projectsRes.json();
@@ -265,6 +277,10 @@ const AdminPage = () => {
                 if (certsRes.ok) {
                     const data = await certsRes.json();
                     setCertifications(data);
+                }
+                if (catsRes.ok) {
+                    const data = await catsRes.json();
+                    setCategories(data);
                 }
                 fetchProfile();
             } else {
@@ -545,11 +561,13 @@ const AdminPage = () => {
             setCertTitle(cert.title);
             setCertIssuer(cert.issuer);
             setCertStatus(cert.status || "UNLOCKED");
+            setCertLink(cert.link || "");
             setCertOrder(cert.order || 0);
         } else {
             setCertTitle("");
             setCertIssuer("");
             setCertStatus("UNLOCKED");
+            setCertLink("");
             setCertOrder(0);
         }
         setIsCertModalOpen(true);
@@ -561,6 +579,7 @@ const AdminPage = () => {
             title: certTitle.trim(),
             issuer: certIssuer.trim(),
             status: certStatus.trim(),
+            link: certLink.trim(),
             order: parseInt(certOrder) || 0
         };
 
@@ -606,6 +625,77 @@ const AdminPage = () => {
             }
         } catch (err) {
             toast.error("Network communication failure.");
+        }
+    };
+
+    const openCategoryEditor = (cat = null) => {
+        if (cat) {
+            setEditingCategory(cat);
+            setCategoryName(cat.name);
+        } else {
+            setEditingCategory(null);
+            setCategoryName("");
+        }
+        setIsCategoryModalOpen(true);
+    };
+
+    const handleSaveCategory = async (e) => {
+        e.preventDefault();
+        const payload = { name: categoryName.trim() };
+        if (!payload.name) {
+            toast.error("Category name cannot be empty.");
+            return;
+        }
+
+        try {
+            let res;
+            if (editingCategory) {
+                res = await apiFetch(`/api/categories/${editingCategory.id}/`, {
+                    method: "PUT",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(payload)
+                });
+            } else {
+                res = await apiFetch("/api/categories/", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(payload)
+                });
+            }
+
+            if (res.ok) {
+                const savedCat = await res.json();
+                if (editingCategory) {
+                    setCategories(prev => prev.map(c => c.id === editingCategory.id ? savedCat : c));
+                    toast.success("Category configuration synchronized.");
+                } else {
+                    setCategories(prev => [...prev, savedCat]);
+                    toast.success("New category registered.");
+                }
+                setIsCategoryModalOpen(false);
+            } else {
+                const errData = await res.json();
+                toast.error(errData.name ? errData.name[0] : "Category synchronization failed.");
+            }
+        } catch (err) {
+            toast.error("Network interface connection failure.");
+        }
+    };
+
+    const handleDeleteCategory = async (id) => {
+        try {
+            const res = await apiFetch(`/api/categories/${id}/`, {
+                method: "DELETE"
+            });
+            if (res.ok) {
+                setCategories(prev => prev.filter(c => c.id !== id));
+                toast.success("Category deleted from registry.");
+                setDeleteCategoryConfirmId(null);
+            } else {
+                toast.error("Deletion rejected by core.");
+            }
+        } catch (err) {
+            toast.error("Network interface connection failure.");
         }
     };
 
@@ -834,13 +924,15 @@ const AdminPage = () => {
                                     else if (activeTab === "skills") openSkillEditor();
                                     else if (activeTab === "missions") openMissionEditor();
                                     else if (activeTab === "certifications") openCertEditor();
+                                    else if (activeTab === "categories") openCategoryEditor();
                                 }}
                                 className="px-5 py-2.5 border border-accent/60 bg-accent/10 text-accent font-display text-xs tracking-widest uppercase hover:bg-accent/20 hover:shadow-[var(--glow-shadow-accent)] transition-all duration-300 flex items-center gap-2"
                             >
                                 <Plus size={14} />{" "}
                                 {activeTab === "projects" ? "Add System" : 
                                  activeTab === "skills" ? "Add Capability" : 
-                                 activeTab === "missions" ? "Add Mission" : "Add Certification"}
+                                 activeTab === "missions" ? "Add Mission" : 
+                                 activeTab === "categories" ? "Add Category" : "Add Certification"}
                             </button>
                         )}
                         <button
@@ -904,10 +996,20 @@ const AdminPage = () => {
                     >
                         System Profile
                     </button>
+                    <button
+                        onClick={() => setActiveTab("categories")}
+                        className={`pb-3 text-xs font-display tracking-widest uppercase border-b-2 transition-all duration-300 shrink-0 ${
+                            activeTab === "categories"
+                                ? "border-primary text-primary text-glow"
+                                : "border-transparent text-muted-foreground hover:text-foreground"
+                        }`}
+                    >
+                        Project Categories
+                    </button>
                 </div>
 
                 {/* Dashboard Table */}
-                <HudCard label={activeTab === "projects" ? "Active Deployed Systems Catalog" : activeTab === "skills" ? "Suit Capabilities Diagnostic Matrix" : activeTab === "missions" ? "Mission Logs Chronological Timeline" : activeTab === "certifications" ? "Certifications & Upgrades Registry" : "System Diagnostics Overview Settings"}>
+                <HudCard label={activeTab === "projects" ? "Active Deployed Systems Catalog" : activeTab === "skills" ? "Suit Capabilities Diagnostic Matrix" : activeTab === "missions" ? "Mission Logs Chronological Timeline" : activeTab === "certifications" ? "Certifications & Upgrades Registry" : activeTab === "categories" ? "Project Categories Registry" : "System Diagnostics Overview Settings"}>
                     {activeTab === "projects" ? (
                         <div className="overflow-x-auto w-full pt-4">
                             <table className="w-full border-collapse text-left">
@@ -1178,7 +1280,13 @@ const AdminPage = () => {
                                     {certifications.map((cert) => (
                                         <tr key={cert.id} className="hover:bg-muted/10 transition-colors">
                                             <td className="py-4 px-4 font-semibold text-foreground">
-                                                {cert.title}
+                                                {cert.link ? (
+                                                    <a href={cert.link} target="_blank" rel="noopener noreferrer" className="hover:text-accent transition-colors underline inline-flex items-center gap-1.5">
+                                                        {cert.title} <ExternalLink size={12} className="shrink-0" />
+                                                    </a>
+                                                ) : (
+                                                    cert.title
+                                                )}
                                             </td>
                                             <td className="py-4 px-4 text-muted-foreground">
                                                 {cert.issuer}
@@ -1234,6 +1342,69 @@ const AdminPage = () => {
                                         <tr>
                                             <td colSpan="5" className="py-12 text-center text-muted-foreground font-display tracking-widest uppercase">
                                                 NO UPGRADES LOGGED IN CERTIFICATIONS MATRIX.
+                                            </td>
+                                        </tr>
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
+                    ) : activeTab === "categories" ? (
+                        <div className="overflow-x-auto w-full pt-4">
+                            <table className="w-full border-collapse text-left">
+                                <thead>
+                                    <tr className="border-b border-border/40 text-xs font-display tracking-widest text-muted-foreground uppercase">
+                                        <th className="py-4 px-4">Category Name</th>
+                                        <th className="py-4 px-4 text-right">Operations</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-border/20 font-body text-sm">
+                                    {categories.map((cat) => (
+                                        <tr key={cat.id} className="hover:bg-muted/10 transition-colors">
+                                            <td className="py-4 px-4 font-semibold text-foreground font-display tracking-wide">
+                                                {cat.name}
+                                            </td>
+                                            <td className="py-4 px-4 text-right space-x-2">
+                                                <button
+                                                    onClick={() => openCategoryEditor(cat)}
+                                                    className="p-2 border border-border hover:border-accent hover:text-accent bg-muted/20 text-muted-foreground transition-all duration-300 rounded inline-flex"
+                                                    title="Modify category"
+                                                >
+                                                    <Edit2 size={14} />
+                                                </button>
+                                                {deleteCategoryConfirmId === cat.id ? (
+                                                    <div className="inline-flex items-center gap-1 bg-primary/20 border border-primary px-1.5 py-0.5 rounded animate-pulse">
+                                                        <span className="text-[10px] font-display text-primary tracking-widest uppercase pr-1">Confirm Purge?</span>
+                                                        <button 
+                                                            onClick={() => handleDeleteCategory(cat.id)}
+                                                            className="p-1 hover:text-primary transition-colors text-primary"
+                                                            title="Delete permanently"
+                                                        >
+                                                            <Check size={14} />
+                                                        </button>
+                                                        <button 
+                                                            onClick={() => setDeleteCategoryConfirmId(null)}
+                                                            className="p-1 hover:text-muted-foreground transition-colors text-muted-foreground"
+                                                            title="Cancel purge"
+                                                        >
+                                                            <X size={14} />
+                                                        </button>
+                                                    </div>
+                                                ) : (
+                                                    <button
+                                                        onClick={() => setDeleteCategoryConfirmId(cat.id)}
+                                                        className="p-2 border border-border hover:border-primary hover:text-primary bg-muted/20 text-muted-foreground transition-all duration-300 rounded inline-flex"
+                                                        title="Purge category"
+                                                    >
+                                                        <Trash2 size={14} />
+                                                    </button>
+                                                )}
+                                            </td>
+                                        </tr>
+                                    ))}
+                                    {categories.length === 0 && (
+                                        <tr>
+                                            <td colSpan="2" className="py-12 text-center text-muted-foreground font-display tracking-widest uppercase">
+                                                NO CATEGORIES REGISTERED IN DATABASE.
                                             </td>
                                         </tr>
                                     )}
@@ -1516,19 +1687,17 @@ const AdminPage = () => {
                                         <label className="text-[10px] font-display text-muted-foreground tracking-widest uppercase block mb-1">
                                             Category *
                                         </label>
-                                        <input
-                                            type="text"
-                                            list="project-categories"
+                                        <select
                                             value={formCategory}
                                             onChange={(e) => setFormCategory(e.target.value)}
-                                            placeholder="Select or type new category..."
                                             className="w-full bg-muted/30 border border-muted-foreground/30 focus:border-accent rounded px-3 py-2 text-sm font-body text-foreground focus:outline-none transition-all duration-300"
-                                        />
-                                        <datalist id="project-categories">
-                                            {Array.from(new Set(projects.map(p => p.category).filter(Boolean))).map(cat => (
-                                                <option key={cat} value={cat} />
+                                            required
+                                        >
+                                            <option value="" disabled className="bg-background">-- Select Category --</option>
+                                            {categories.map(cat => (
+                                                <option key={cat.id} value={cat.name} className="bg-background">{cat.name}</option>
                                             ))}
-                                        </datalist>
+                                        </select>
                                     </div>
                                 </div>
 
@@ -1790,6 +1959,49 @@ const AdminPage = () => {
                     </div>
                 </div>
             )}
+            {/* Category Editor Modal Overlay */}
+            {isCategoryModalOpen && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm overflow-y-auto">
+                    <div className="w-full max-w-md my-8">
+                        <HudCard label={editingCategory ? "Category Config // Edit Record" : "Category Config // Create New"}>
+                            <form onSubmit={handleSaveCategory} className="space-y-6 pt-4 px-1">
+                                <div className="space-y-4">
+                                    <div>
+                                        <label className="text-[10px] font-display text-muted-foreground tracking-widest uppercase block mb-1">
+                                            Category Name *
+                                        </label>
+                                        <input
+                                            type="text"
+                                            value={categoryName}
+                                            onChange={(e) => setCategoryName(e.target.value)}
+                                            className="w-full bg-muted/30 border border-muted-foreground/30 focus:border-accent rounded px-3 py-2 text-sm font-body text-foreground focus:outline-none transition-all duration-300"
+                                            placeholder="e.g. Mobile, DevOps, AI/ML"
+                                            required
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="flex justify-end gap-3 border-t border-border/20 pt-4">
+                                    <button
+                                        type="button"
+                                        onClick={() => setIsCategoryModalOpen(false)}
+                                        className="px-4 py-2 border border-border hover:border-accent/40 text-muted-foreground hover:text-foreground font-display text-xs tracking-widest uppercase transition-all duration-300"
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button
+                                        type="submit"
+                                        className="px-5 py-2 bg-accent/20 border border-accent text-accent font-display text-xs tracking-widest uppercase hover:bg-accent/30 transition-all duration-300"
+                                    >
+                                        Synchronize
+                                    </button>
+                                </div>
+                            </form>
+                        </HudCard>
+                    </div>
+                </div>
+            )}
+
             {/* Mission Log Editor Modal Overlay */}
             {isMissionModalOpen && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm overflow-y-auto">
@@ -1944,6 +2156,18 @@ const AdminPage = () => {
                                                 placeholder="0"
                                             />
                                         </div>
+                                    </div>
+                                    <div>
+                                        <label className="text-[10px] font-display text-muted-foreground tracking-widest uppercase block mb-1">
+                                            Verification Link / URL
+                                        </label>
+                                        <input
+                                            type="text"
+                                            value={certLink}
+                                            onChange={(e) => setCertLink(e.target.value)}
+                                            className="w-full bg-muted/30 border border-muted-foreground/30 focus:border-accent rounded px-3 py-2 text-sm font-body text-foreground focus:outline-none transition-all duration-300"
+                                            placeholder="e.g. https://credly.com/..."
+                                        />
                                     </div>
                                 </div>
 
