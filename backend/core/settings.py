@@ -223,5 +223,6 @@ EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS', 'True').lower() in ('true', '1')
 DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', EMAIL_HOST_USER) or 'noreply@example.com'
 OWNER_EMAIL = os.getenv('OWNER_EMAIL', EMAIL_HOST_USER) or 'owner@example.com'
 EMAIL_TIMEOUT = 10
+RESEND_API_KEY = os.getenv('RESEND_API_KEY', '')
 
 

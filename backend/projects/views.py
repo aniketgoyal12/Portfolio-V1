@@ -162,6 +162,46 @@ class ContactRateThrottle(SimpleRateThrottle):
         return self.get_ident(request)
 
 
+import urllib.request
+import json
+import os
+
+def send_via_resend(api_key, from_email, to_email, subject, html_content, text_content):
+    url = "https://api.resend.com/emails"
+    headers = {
+        "Authorization": f"Bearer {api_key}",
+        "Content-Type": "application/json"
+    }
+
+    # Resend requires sending from verified domain or onboarding@resend.dev
+    sender = from_email
+    if not sender or "gmail.com" in sender.lower() or "example.com" in sender.lower() or "onboarding" in api_key.lower() or sender == "owner@example.com":
+        sender = "onboarding@resend.dev"
+
+    payload = {
+        "from": sender,
+        "to": [to_email],
+        "subject": subject,
+        "html": html_content,
+        "text": text_content
+    }
+
+    data = json.dumps(payload).encode('utf-8')
+    req = urllib.request.Request(url, data=data, headers=headers, method='POST')
+
+    try:
+        with urllib.request.urlopen(req) as response:
+            res_body = response.read().decode('utf-8')
+            logger.info(f"Resend email sent successfully to {to_email}. Response: {res_body}")
+    except urllib.error.HTTPError as e:
+        err_body = e.read().decode('utf-8')
+        logger.error(f"Resend API HTTPError ({e.code}): {err_body}")
+        raise e
+    except Exception as e:
+        logger.error(f"Resend API error: {str(e)}")
+        raise e
+
+
 class ContactFormView(APIView):
     permission_classes = [permissions.AllowAny]
     throttle_classes = [ContactRateThrottle]
@@ -243,13 +283,22 @@ class ContactFormView(APIView):
             import threading
             def send_async():
                 try:
-                    from django.core import mail
-                    # Use a single SMTP connection for both emails to avoid multiple handshakes
-                    connection = mail.get_connection()
-                    connection.open()
-                    connection.send_messages([msg1, msg2])
-                    connection.close()
-                    logger.info(f"Emails dispatched successfully in background thread: owner={owner_email}, sender={email}")
+                    resend_api_key = getattr(settings, 'RESEND_API_KEY', None) or os.getenv('RESEND_API_KEY')
+                    if resend_api_key:
+                        logger.info("Resend API Key found. Dispatching emails via Resend HTTP API...")
+                        # Send Email 1 (Owner)
+                        send_via_resend(resend_api_key, default_from_email, owner_email, owner_subject, owner_html, owner_text)
+                        # Send Email 2 (Sender)
+                        send_via_resend(resend_api_key, default_from_email, email, sender_subject, sender_html, sender_text)
+                    else:
+                        logger.info("Resend API Key not found. Falling back to Django SMTP mail backend...")
+                        from django.core import mail
+                        # Use a single SMTP connection for both emails to avoid multiple handshakes
+                        connection = mail.get_connection()
+                        connection.open()
+                        connection.send_messages([msg1, msg2])
+                        connection.close()
+                        logger.info(f"Emails dispatched successfully in background thread: owner={owner_email}, sender={email}")
                 except Exception as async_exc:
                     logger.error(f"Failed to send email notifications in background thread: {str(async_exc)}", exc_info=True)
 
