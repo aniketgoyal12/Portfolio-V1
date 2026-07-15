@@ -1,6 +1,7 @@
 // Utility for handling API requests with automatic CSRF token management and JWT refreshing
 
-const BASE_URL = import.meta.env.VITE_API_BASE_URL || "";
+const rawBaseUrl = import.meta.env.VITE_API_BASE_URL || "";
+const BASE_URL = rawBaseUrl.endsWith("/") ? rawBaseUrl.slice(0, -1) : rawBaseUrl;
 console.log("[API Client] Base URL configured as:", BASE_URL || "Relative (empty)");
 
 export const getCookie = (name) => {

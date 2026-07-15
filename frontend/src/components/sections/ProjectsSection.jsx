@@ -110,7 +110,8 @@ const ProjectsSection = () => {
     useEffect(() => {
         const fetchProjects = async () => {
             try {
-                const BASE_URL = import.meta.env.VITE_API_BASE_URL || "";
+                const rawBaseUrl = import.meta.env.VITE_API_BASE_URL || "";
+                const BASE_URL = rawBaseUrl.endsWith("/") ? rawBaseUrl.slice(0, -1) : rawBaseUrl;
                 const res = await fetch(`${BASE_URL}/api/projects/`);
                 if (res.ok) {
                     const data = await res.json();
