@@ -16,7 +16,7 @@ let csrfInitializationPromise = null;
 
 export const initCSRF = () => {
     if (!csrfInitializationPromise) {
-        csrfInitializationPromise = fetch(`${BASE_URL}/api/auth/csrf/`)
+        csrfInitializationPromise = fetch(`${BASE_URL}/api/auth/csrf/`, { credentials: 'include' })
             .then(res => {
                 if (!res.ok) throw new Error("Failed to set CSRF cookie");
                 return res.json();
