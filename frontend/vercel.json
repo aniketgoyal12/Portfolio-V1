@@ -1,0 +1,16 @@
+{
+  "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "https://your-backend-railway-domain.up.railway.app/api/:path*"
+    },
+    {
+      "source": "/media/:path*",
+      "destination": "https://your-backend-railway-domain.up.railway.app/media/:path*"
+    },
+    {
+      "source": "/((?!api|media|assets|favicon.ico|index.html).*)",
+      "destination": "/index.html"
+    }
+  ]
+}

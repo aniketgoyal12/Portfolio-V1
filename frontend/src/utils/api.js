@@ -1,5 +1,7 @@
 // Utility for handling API requests with automatic CSRF token management and JWT refreshing
 
+const BASE_URL = import.meta.env.VITE_API_BASE_URL || "";
+
 export const getCookie = (name) => {
     const value = `; ${document.cookie}`;
     const parts = value.split(`; ${name}=`);
@@ -12,7 +14,7 @@ let csrfInitializationPromise = null;
 
 export const initCSRF = () => {
     if (!csrfInitializationPromise) {
-        csrfInitializationPromise = fetch('/api/auth/csrf/')
+        csrfInitializationPromise = fetch(`${BASE_URL}/api/auth/csrf/`)
             .then(res => {
                 if (!res.ok) throw new Error("Failed to set CSRF cookie");
                 return res.json();
@@ -53,7 +55,7 @@ export const apiFetch = async (url, options = {}) => {
     }
 
     try {
-        let response = await fetch(url, options);
+        let response = await fetch(`${BASE_URL}${url}`, options);
 
         // Handle expired access token
         if (response.status === 401 && !url.includes('/api/auth/login/') && !url.includes('/api/auth/refresh/')) {
@@ -69,7 +71,7 @@ export const apiFetch = async (url, options = {}) => {
             isRefreshing = true;
 
             try {
-                const refreshRes = await fetch('/api/auth/refresh/', {
+                const refreshRes = await fetch(`${BASE_URL}/api/auth/refresh/`, {
                     method: 'POST',
                     credentials: 'include',
                     headers: {
