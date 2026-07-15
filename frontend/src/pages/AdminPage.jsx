@@ -1525,7 +1525,7 @@ const AdminPage = () => {
                                             className="w-full bg-muted/30 border border-muted-foreground/30 focus:border-accent rounded px-3 py-2 text-sm font-body text-foreground focus:outline-none transition-all duration-300"
                                         />
                                         <datalist id="project-categories">
-                                            {Array.from(new Set(projectsList.map(p => p.category).filter(Boolean))).map(cat => (
+                                            {Array.from(new Set(projects.map(p => p.category).filter(Boolean))).map(cat => (
                                                 <option key={cat} value={cat} />
                                             ))}
                                         </datalist>
