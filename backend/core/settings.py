@@ -14,14 +14,14 @@ pymysql.install_as_MySQLdb()
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Helper for parsing CSV environment variables safely
-def parse_csv_env(var_name, default=""):
+def parse_csv_env(var_name, default="", prepend_https=False):
     value = os.getenv(var_name, default)
     origins = []
     for item in value.split(","):
         item = item.strip().rstrip('/')
         if not item:
             continue
-        if not item.startswith(("http://", "https://")):
+        if prepend_https and not item.startswith(("http://", "https://")):
             item = "https://" + item
         origins.append(item)
     return origins
@@ -32,7 +32,7 @@ SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-6v!u(ou#3bv!%3nclgxn9h#z3_
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv('DEBUG', 'True').lower() in ('true', '1')
 
-ALLOWED_HOSTS = parse_csv_env('ALLOWED_HOSTS', 'localhost,127.0.0.1')
+ALLOWED_HOSTS = parse_csv_env('ALLOWED_HOSTS', '*', prepend_https=False)
 
 # Application definition
 INSTALLED_APPS = [
@@ -186,8 +186,8 @@ REST_FRAMEWORK = {
 }
 
 # CORS & CSRF configurations
-CORS_ALLOWED_ORIGINS = parse_csv_env('CORS_ALLOWED_ORIGINS', 'http://localhost:5173,http://127.0.0.1:5173')
-CSRF_TRUSTED_ORIGINS = parse_csv_env('CSRF_TRUSTED_ORIGINS', 'http://localhost:5173,http://127.0.0.1:5173')
+CORS_ALLOWED_ORIGINS = parse_csv_env('CORS_ALLOWED_ORIGINS', 'http://localhost:5173,http://127.0.0.1:5173', prepend_https=True)
+CSRF_TRUSTED_ORIGINS = parse_csv_env('CSRF_TRUSTED_ORIGINS', 'http://localhost:5173,http://127.0.0.1:5173', prepend_https=True)
 CORS_ALLOW_CREDENTIALS = True
 
 # Email Configuration
