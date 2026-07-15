@@ -303,12 +303,19 @@ const AdminPage = () => {
     const handleLogout = async () => {
         try {
             await apiFetch("/api/auth/logout/", { method: "POST" });
-            setIsAuthenticated(false);
-            toast.success("Secure connection terminated.");
         } catch (err) {
-            toast.error("Logout request failed.");
+            console.error("Logout request failed:", err);
+        } finally {
+            setIsAuthenticated(false);
+            // Clear local storage and session storage
+            localStorage.clear();
+            sessionStorage.clear();
+            toast.success("Secure connection terminated.");
+            // Force page reload to clear all React state, query cache, and JS memory
+            window.location.href = "/admin";
         }
     };
+
 
     const handleToggleFeatured = async (id, currentVal) => {
         try {

@@ -17,8 +17,8 @@ from django.template.loader import render_to_string
 from rest_framework.throttling import SimpleRateThrottle
 import logging
 
-from .models import Project, Skill, Profile, MissionLog, Certification
-from .serializers import ProjectSerializer, SkillSerializer, ProfileSerializer, MissionLogSerializer, CertificationSerializer
+from .models import Project, Skill, Profile, MissionLog, Certification, ProjectCategory, ContactMessage
+from .serializers import ProjectSerializer, SkillSerializer, ProfileSerializer, MissionLogSerializer, CertificationSerializer, ProjectCategorySerializer
 
 logger = logging.getLogger(__name__)
 
@@ -104,10 +104,27 @@ class LogoutView(APIView):
         if refresh_token:
             try:
                 RefreshToken(refresh_token).blacklist()
-            except Exception:
-                pass
-        response.delete_cookie(settings.SIMPLE_JWT_ACCESS_COOKIE, path='/')
-        response.delete_cookie(settings.SIMPLE_JWT_REFRESH_COOKIE, path='/api/auth/')
+            except Exception as e:
+                logger.warning(f"Could not blacklist refresh token: {str(e)}")
+
+        # Clear cookies using exact settings to ensure browser removes them
+        access_kwargs = COOKIE_KWARGS('/')
+        refresh_kwargs = COOKIE_KWARGS('/api/auth/')
+
+        response.set_cookie(
+            settings.SIMPLE_JWT_ACCESS_COOKIE,
+            '',
+            max_age=0,
+            expires='Thu, 01 Jan 1970 00:00:00 GMT',
+            **access_kwargs
+        )
+        response.set_cookie(
+            settings.SIMPLE_JWT_REFRESH_COOKIE,
+            '',
+            max_age=0,
+            expires='Thu, 01 Jan 1970 00:00:00 GMT',
+            **refresh_kwargs
+        )
         return response
 
 
@@ -170,6 +187,12 @@ class ContactFormView(APIView):
         except ValidationError:
             return Response({"detail": "Invalid email address format"}, status=status.HTTP_400_BAD_REQUEST)
 
+        # 3.5 Save contact message to database
+        try:
+            ContactMessage.objects.create(name=name, email=email, message=message)
+        except Exception as e:
+            logger.error(f"Failed to save contact message to database: {str(e)}", exc_info=True)
+
         # 4. Email setup
         profile = Profile.objects.first()
         if profile:
@@ -208,23 +231,39 @@ class ContactFormView(APIView):
         )
 
         try:
-            # Send Email 1 (Owner)
+            # Prepare Email 1 (Owner)
             msg1 = EmailMultiAlternatives(owner_subject, owner_text, default_from_email, [owner_email])
             msg1.attach_alternative(owner_html, "text/html")
-            msg1.send()
 
-            # Send Email 2 (Sender)
+            # Prepare Email 2 (Sender)
             msg2 = EmailMultiAlternatives(sender_subject, sender_text, default_from_email, [email])
             msg2.attach_alternative(sender_html, "text/html")
-            msg2.send()
+
+            # Send emails asynchronously in a background thread to prevent UI blocking
+            import threading
+            def send_async():
+                try:
+                    from django.core import mail
+                    # Use a single SMTP connection for both emails to avoid multiple handshakes
+                    connection = mail.get_connection()
+                    connection.open()
+                    connection.send_messages([msg1, msg2])
+                    connection.close()
+                    logger.info(f"Emails dispatched successfully in background thread: owner={owner_email}, sender={email}")
+                except Exception as async_exc:
+                    logger.error(f"Failed to send email notifications in background thread: {str(async_exc)}", exc_info=True)
+
+            thread = threading.Thread(target=send_async)
+            thread.start()
 
             return Response({"detail": "Message sent — check your email for confirmation"}, status=status.HTTP_200_OK)
 
         except Exception as e:
-            logger.error(f"Failed to send email notification: {str(e)}", exc_info=True)
+            logger.error(f"Failed to initiate email sending flow: {str(e)}", exc_info=True)
+            # Since the message is already saved in the database, return 200 OK
             return Response(
-                {"detail": "Failed to transmit message due to mail server communication issues"}, 
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                {"detail": "Message received successfully — (notification dispatch pending)"}, 
+                status=status.HTTP_200_OK
             )
 
 
@@ -285,6 +324,16 @@ class MissionLogViewSet(viewsets.ModelViewSet):
 class CertificationViewSet(viewsets.ModelViewSet):
     queryset = Certification.objects.all().order_by('order', 'created_at')
     serializer_class = CertificationSerializer
+
+    def get_permissions(self):
+        if self.action in ['list', 'retrieve']:
+            return [permissions.AllowAny()]
+        return [permissions.IsAuthenticated()]
+
+
+class ProjectCategoryViewSet(viewsets.ModelViewSet):
+    queryset = ProjectCategory.objects.all().order_by('name')
+    serializer_class = ProjectCategorySerializer
 
     def get_permissions(self):
         if self.action in ['list', 'retrieve']:

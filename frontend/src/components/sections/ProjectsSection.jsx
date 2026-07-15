@@ -105,20 +105,28 @@ const ProjectsSection = () => {
     const modalRef = useRef(null);
     const previousFocusRef = useRef(null);
 
-    const categories = ["All", ...Array.from(new Set(projectsList.map(p => p.category).filter(Boolean)))];
+    const [categories, setCategories] = useState(["All", "Frontend", "Backend", "Full-Stack"]);
 
     useEffect(() => {
         const fetchProjects = async () => {
             try {
                 const rawBaseUrl = import.meta.env.VITE_API_BASE_URL || "";
                 const BASE_URL = rawBaseUrl.endsWith("/") ? rawBaseUrl.slice(0, -1) : rawBaseUrl;
-                const res = await fetch(`${BASE_URL}/api/projects/`);
-                if (res.ok) {
-                    const data = await res.json();
+                const [projectsRes, categoriesRes] = await Promise.all([
+                    fetch(`${BASE_URL}/api/projects/`),
+                    fetch(`${BASE_URL}/api/categories/`)
+                ]);
+
+                if (projectsRes.ok) {
+                    const data = await projectsRes.json();
                     setProjectsList(data);
                 }
+                if (categoriesRes.ok) {
+                    const data = await categoriesRes.json();
+                    setCategories(["All", ...data.map(c => c.name)]);
+                }
             } catch (err) {
-                console.warn("Unable to connect to backend projects API, using fallback matrix static data.", err);
+                console.warn("Unable to connect to backend, using fallback matrix static data.", err);
             }
         };
         fetchProjects();

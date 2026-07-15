@@ -1,6 +1,6 @@
 import json
 from rest_framework import serializers
-from .models import Project, Skill, Profile, MissionLog, Certification
+from .models import Project, Skill, Profile, MissionLog, Certification, ProjectCategory
 
 class ProjectSerializer(serializers.ModelSerializer):
     class Meta:
@@ -51,4 +51,10 @@ class MissionLogSerializer(serializers.ModelSerializer):
 class CertificationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Certification
+        fields = '__all__'
+
+
+class ProjectCategorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProjectCategory
         fields = '__all__'

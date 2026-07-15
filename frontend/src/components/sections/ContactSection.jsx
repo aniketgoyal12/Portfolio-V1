@@ -38,6 +38,7 @@ const ContactSection = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        if (isSubmitting) return;
         
         // Client-side validations
         const nameVal = formData.name.trim();
@@ -72,17 +73,31 @@ const ContactSection = () => {
                 }),
             });
 
-            const data = await response.json();
+            let detail = "Transmission failed. Please try again.";
+            try {
+                const contentType = response.headers.get("content-type");
+                if (contentType && contentType.includes("application/json")) {
+                    const data = await response.json();
+                    detail = data.detail || detail;
+                } else {
+                    const text = await response.text();
+                    if (text && text.length < 150) {
+                        detail = text;
+                    }
+                }
+            } catch (parseErr) {
+                // Ignore parse errors
+            }
 
             if (response.ok) {
-                setStatusMessage("Transmission successful.");
+                setStatusMessage(detail || "Transmission successful.");
                 setFormData({ name: "", email: "", message: "", website: "" });
             } else {
-                setStatusMessage(data.detail || "Transmission failed. Please try again.");
+                setStatusMessage(detail);
             }
         } catch (error) {
             console.error(error);
-            setStatusMessage("Connection error. Please check network.");
+            setStatusMessage(error.message || "Connection error. Please check network.");
         } finally {
             setIsSubmitting(false);
             setTimeout(() => setStatusMessage(""), 5000);

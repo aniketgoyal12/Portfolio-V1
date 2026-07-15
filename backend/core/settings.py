@@ -188,6 +188,20 @@ REST_FRAMEWORK = {
 # CORS & CSRF configurations
 CORS_ALLOWED_ORIGINS = parse_csv_env('CORS_ALLOWED_ORIGINS', 'http://localhost:5173,http://127.0.0.1:5173', prepend_https=True)
 CSRF_TRUSTED_ORIGINS = parse_csv_env('CSRF_TRUSTED_ORIGINS', 'http://localhost:5173,http://127.0.0.1:5173', prepend_https=True)
+
+# Always ensure production Vercel and local dev origins are present
+REQUIRED_ORIGINS = [
+    'https://portfolio-v1-zeta-nine.vercel.app',
+    'http://localhost:5173',
+    'http://127.0.0.1:5173',
+    'http://localhost:3000',
+]
+for origin in REQUIRED_ORIGINS:
+    if origin not in CORS_ALLOWED_ORIGINS:
+        CORS_ALLOWED_ORIGINS.append(origin)
+    if origin not in CSRF_TRUSTED_ORIGINS:
+        CSRF_TRUSTED_ORIGINS.append(origin)
+
 CORS_ALLOW_CREDENTIALS = True
 
 print("=== SETTINGS DIAGNOSTICS ===")
@@ -197,12 +211,17 @@ print("CSRF_TRUSTED_ORIGINS:", CSRF_TRUSTED_ORIGINS)
 print("============================")
 
 # Email Configuration
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', '')
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', '')
+if EMAIL_HOST_USER and EMAIL_HOST_PASSWORD:
+    EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+else:
+    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 EMAIL_HOST = os.getenv('EMAIL_HOST', 'smtp.gmail.com')
 EMAIL_PORT = int(os.getenv('EMAIL_PORT', 587))
 EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS', 'True').lower() in ('true', '1')
-EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', '')
-EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', '')
 DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', EMAIL_HOST_USER) or 'noreply@example.com'
 OWNER_EMAIL = os.getenv('OWNER_EMAIL', EMAIL_HOST_USER) or 'owner@example.com'
+EMAIL_TIMEOUT = 10
+
 

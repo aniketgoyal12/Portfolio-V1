@@ -62,8 +62,16 @@ export const apiFetch = async (url, options = {}) => {
         }
     }
 
+    const cleanUrl = url.startsWith('/') ? url : `/${url}`;
+    const fullUrl = `${BASE_URL}${cleanUrl}`;
+
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), options.timeout || 15000);
+    options.signal = controller.signal;
+
     try {
-        let response = await fetch(`${BASE_URL}${url}`, options);
+        let response = await fetch(fullUrl, options);
+        clearTimeout(timeoutId);
 
         // Handle expired access token
         if (response.status === 401 && !url.includes('/api/auth/login/') && !url.includes('/api/auth/refresh/')) {
@@ -107,6 +115,10 @@ export const apiFetch = async (url, options = {}) => {
 
         return response;
     } catch (err) {
+        clearTimeout(timeoutId);
+        if (err.name === 'AbortError') {
+            throw new Error("Request timed out. Please check your network connection.");
+        }
         throw err;
     }
 };

@@ -3,7 +3,7 @@ from rest_framework.routers import DefaultRouter
 from .views import (
     ProjectViewSet, CSRFTokenView, LoginView, RefreshView, 
     LogoutView, VerifyAuthView, ContactFormView, SkillViewSet, ProfileView,
-    MissionLogViewSet, CertificationViewSet
+    MissionLogViewSet, CertificationViewSet, ProjectCategoryViewSet
 )
 
 router = DefaultRouter()
@@ -11,6 +11,7 @@ router.register(r'projects', ProjectViewSet, basename='project')
 router.register(r'skills', SkillViewSet, basename='skill')
 router.register(r'missions', MissionLogViewSet, basename='mission')
 router.register(r'certifications', CertificationViewSet, basename='certification')
+router.register(r'categories', ProjectCategoryViewSet, basename='category')
 
 urlpatterns = [
     path('auth/csrf/', CSRFTokenView.as_view(), name='csrf_token'),
