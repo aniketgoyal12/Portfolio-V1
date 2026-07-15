@@ -16,7 +16,15 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Helper for parsing CSV environment variables safely
 def parse_csv_env(var_name, default=""):
     value = os.getenv(var_name, default)
-    return [item.strip().rstrip('/') for item in value.split(",") if item.strip()]
+    origins = []
+    for item in value.split(","):
+        item = item.strip().rstrip('/')
+        if not item:
+            continue
+        if not item.startswith(("http://", "https://")):
+            item = "https://" + item
+        origins.append(item)
+    return origins
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-6v!u(ou#3bv!%3nclgxn9h#z3_0j*m*z=!uc4z0f#_2irr4n*p')
