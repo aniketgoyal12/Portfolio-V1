@@ -1,6 +1,7 @@
 from django.conf import settings
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.utils.decorators import method_decorator
+from django.middleware.csrf import get_token as django_get_token
 from rest_framework import viewsets, permissions, status
 from rest_framework.decorators import action
 from rest_framework.views import APIView
@@ -36,6 +37,7 @@ class CSRFTokenView(APIView):
     def get(self, request):
         return Response({
             "detail": "CSRF cookie set",
+            "csrfToken": django_get_token(request),
             "diagnostics": {
                 "ALLOWED_HOSTS": settings.ALLOWED_HOSTS,
                 "CORS_ALLOWED_ORIGINS": settings.CORS_ALLOWED_ORIGINS,

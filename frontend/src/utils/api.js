@@ -21,6 +21,12 @@ export const initCSRF = () => {
                 if (!res.ok) throw new Error("Failed to set CSRF cookie");
                 return res.json();
             })
+            .then(data => {
+                if (data && data.csrfToken) {
+                    window.csrfToken = data.csrfToken;
+                }
+                return data;
+            })
             .catch(err => {
                 console.error("CSRF Initialization error:", err);
                 csrfInitializationPromise = null; // Retry on next call
@@ -50,7 +56,7 @@ export const apiFetch = async (url, options = {}) => {
 
     // Attach CSRF header for write requests
     if (options.method && !['GET', 'HEAD', 'OPTIONS', 'TRACE'].includes(options.method.toUpperCase())) {
-        const csrfToken = getCookie('csrftoken');
+        const csrfToken = getCookie('csrftoken') || window.csrfToken;
         if (csrfToken) {
             options.headers['X-CSRFToken'] = csrfToken;
         }
