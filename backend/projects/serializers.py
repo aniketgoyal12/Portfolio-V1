@@ -7,16 +7,7 @@ class ProjectSerializer(serializers.ModelSerializer):
         model = Project
         fields = '__all__'
 
-    def to_internal_value(self, data):
-        internal_data = data.copy()
-        for field in ['tech_stack', 'highlights']:
-            value = data.get(field)
-            if isinstance(value, str):
-                try:
-                    internal_data[field] = json.loads(value)
-                except json.JSONDecodeError:
-                    raise serializers.ValidationError({field: "Invalid JSON format"})
-        return super().to_internal_value(internal_data)
+
 
 
 class SkillSerializer(serializers.ModelSerializer):
@@ -36,16 +27,6 @@ class MissionLogSerializer(serializers.ModelSerializer):
         model = MissionLog
         fields = '__all__'
 
-    def to_internal_value(self, data):
-        internal_data = data.copy()
-        if 'contributions' in data:
-            value = data.get('contributions')
-            if isinstance(value, str):
-                try:
-                    internal_data['contributions'] = json.loads(value)
-                except json.JSONDecodeError:
-                    raise serializers.ValidationError({"contributions": "Invalid JSON format"})
-        return super().to_internal_value(internal_data)
 
 
 class CertificationSerializer(serializers.ModelSerializer):
